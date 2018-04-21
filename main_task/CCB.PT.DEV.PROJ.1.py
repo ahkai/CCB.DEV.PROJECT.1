@@ -1,9 +1,6 @@
-from flask import Flask, render_template, flash, request
+from flask import render_template, flash, request
 from test_module.models import User
-
-
-app = Flask(__name__)
-app.secret_key = 'yankai'
+from main_task import  app
 
 @app.route('/')
 def hello_world():
@@ -49,5 +46,3 @@ def error_page(e):
     vError = "error message!"
     return render_template("hellouser.html", vUser=vUser, vError=vError)
 
-if __name__ == '__main__':
-    app.run("192.168.58.11")

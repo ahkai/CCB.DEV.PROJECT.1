@@ -1,11 +1,5 @@
-
-from db_operation.db_object import DBObject
-from main_task import app
-
-
+from db_operation.db_object import Dbobject
 
 # init database data
-my_db = DBObject()
-my_db_level = DBObject(arg_database='PT_DEMO')
-
-app.secret_key = 'yankai'
+my_db = Dbobject()
+my_db_level = Dbobject(arg_database='PT_DEMO')

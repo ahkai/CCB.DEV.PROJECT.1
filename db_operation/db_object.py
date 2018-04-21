@@ -1,6 +1,6 @@
 import mysql.connector
 
-class DBObject(object):
+class Dbobject(object):
 
     vLog_Message = None
 
