@@ -35,7 +35,7 @@ def page_not_found(error):
     content = json.dumps({"error_code": "403"})
     resp = Response_headers(content)
     return resp
-
+ 
 
 @app.errorhandler(404)
 def page_not_found(error):
