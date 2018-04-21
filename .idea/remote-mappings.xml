@@ -6,6 +6,7 @@
         <remote-mappings server-id="python@sftp://kevin@192.168.232.11:22/usr/bin/python" />
         <remote-mappings server-id="python@ssh://kevin@192.168.232.11:22/usr/bin/python" />
         <remote-mappings server-id="python@ssh://kevin@192.168.232.11:22/home/kevin/CCB.DEV.PT.PROJECT1/venv/bin/python" />
+        <remote-mappings server-id="python@ssh://kevin@192.168.58.11:22/home/kevin/CCB.DEV.PT.PROJECT1/venv/bin/python2.7" />
       </list>
     </list>
   </component>
