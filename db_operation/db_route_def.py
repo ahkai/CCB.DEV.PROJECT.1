@@ -37,7 +37,7 @@ class Connectdb(Resource):
 
 class Getleveldata(Resource):
 
-    def get(self):
+    def post(self):
         vMsg = ''
         vMyHtml = None
 
@@ -78,7 +78,7 @@ class Getleveldata(Resource):
 
 class Getlogicaldata(Resource):
 
-    def get(self):
+    def post(self):
 
         reg_data = reqparse.RequestParser()
         reg_data.add_argument('app_id', type=str, location='args')
