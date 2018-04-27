@@ -228,3 +228,53 @@ class Dbobject(object):
             RetData['Code'] = '0'
 
         return  RetData
+
+    def query_service_info(self, col1=None , col2=None, col3=None):
+
+        vCol1 = str( col1 )
+        vCol2 = '%s%s%s' % ( '%', col2, '%' )
+
+        vLog_Message = '</br>'
+        query_str = 'SELECT app_id, app_ename, app_cname  FROM app_system '
+        vResult_set = 'Resule Set are Following: </br>'
+
+        result_array = []
+        RetData = {}
+
+        try:
+            self.db_cursor.execute(query_str)
+
+            for ( res ) in self.db_cursor:
+                temp_array = {}
+
+                temp_array['app_id'] = res[0]
+                temp_array['app_ename'] = res[1]
+                temp_array['app_cname'] = res[2]
+
+                #cname_str = res[2]
+                #cname_str.encode('utf-8')
+                #fencoding = chardet.detect(cname_str)
+                #print fencoding
+                #cname_str.encode('gb2312')
+                #cname_str.decode('utf8').encode('gb2312')
+
+                #temp_array['app_cname'] = unicode(cname_str, 'gbk')
+                #temp_array['app_cname'] = cname_str.decode('utf-8')
+
+                result_array.append(temp_array)
+
+            RetData['Code'] = '1'
+            RetData['LEVEL_1'] = result_array
+
+            #RetjsonStr = json.dumps(RetData)
+
+            vLog_Message = '%s%s' % ( vLog_Message, 'Query Successful  </br>' )
+
+        except mysql.connector.custom_error_exception() as e:
+        #except mysql.connector.Error as e:
+            #vLog_Message = '%s%s%s%s' % (vLog_Message, 'custom_error_exception:', e.message, '</br>')
+            #vLog_Message = '%s%s%s%s' % (vLog_Message, 'Error Msg1:', e2.message, '</br>')
+
+            RetData['Code'] = '0'
+
+        return  RetData

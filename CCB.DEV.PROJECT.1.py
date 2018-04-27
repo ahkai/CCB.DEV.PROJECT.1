@@ -4,8 +4,10 @@ from flask import url_for,request, redirect, abort
 
 arrServiceRoute = {
                         '10000001': 'getleveldata',
-                        '10000002':'getlogicaldata'
-                    }
+                        '10000002': 'getlogicaldata',
+                        '10000003': 'getserviceinfo',
+                        '10000004': 'getservicedetail',
+                  }
 
 
 @app.route('/task', methods=['GET','POST'])

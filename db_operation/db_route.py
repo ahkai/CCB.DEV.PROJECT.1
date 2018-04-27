@@ -6,6 +6,8 @@ api = Api(app, default_mediatype="application/json")
 api.add_resource(Connectdb, '/task_connect')
 api.add_resource(Getleveldata, '/get_level')
 api.add_resource(Getlogicaldata, '/get_logical')
+api.add_resource(Getserviceinfo, '/get_service')
+api.add_resource(Getservicedetail, '/get_servicedetail')
 
 
 
