@@ -1,4 +1,4 @@
-from flask import  make_response, request, json
+from flask import  make_response, request, json, jsonify
 from flask_restful import Resource, reqparse
 from contextlib import contextmanager
 from sqlalchemy.orm import sessionmaker
@@ -11,8 +11,10 @@ from models import *
 def mysession_scope():
     """Provide a transactional scope around a series of operations."""
 
-    MySession = sessionmaker(bind=MySQL_engine)
-    MySession.connection(execution_options={'isolation_level': '"READ COMMITTED"'})
+    #MySQL_engine.execution_options(isolation_level="READ COMMITTED")
+    SessionObject = sessionmaker(bind=MySQL_engine)
+
+    MySession = SessionObject()
 
     try:
         yield MySession
@@ -44,10 +46,23 @@ class Getservicetype(Resource):
         # connection.execution_options(stream_results=True). \
         #     execute(stmt)
 
-        with mysession_scope() as MySession:
-            vtServiceType = MySession.query( ServiceType ).order_by( ServiceType.type_id )
+        MySQL_engine.execution_options(isolation_level="READ COMMITTED")
 
-        print vtServiceType
+        with mysession_scope() as MySession:
+            vQuery = MySession.query( ServiceType ).order_by( ServiceType.type_id )
+
+            vtServiceTypes = vQuery.all()
+
+            arrRows = []
+            for vtServiceType in vtServiceTypes:
+                arrRows.append( vtServiceType.toDict() )
+
+        print jsonify( arrRows )
+        print arrRows
+        #print json.dumps(arrRows, cls=new_alchemy_encoder(), check_circular=False)
+
+
+        # print vtServiceType
 
         return 'Success'
 
