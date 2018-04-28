@@ -5,8 +5,8 @@ from flask import url_for,request, redirect, abort
 arrServiceRoute = {
                         '10000001': 'getleveldata',
                         '10000002': 'getlogicaldata',
-                        '10000003': 'getserviceinfo',
-                        '10000004': 'getservicedetail',
+                        '10000003': 'getservicetype',
+                        '10000004': 'getserviceinfo'
                   }
 
 
@@ -52,7 +52,7 @@ def task_main():
 
     app.logger.info(message_info)
 
-    # vTaskurl = url_for( 'getlogicaldata', vTaskArg_decode, _method=request.method)
+    # vTaskurl = url_for( 'getservicetype', vTaskArg_decode, _method=request.method)
     vTaskurl = url_for( arrServiceRoute[ vTaskArg[ 'service_id' ] ],  _method=request.method)
     vTaskurl = vTaskurl + '?'+ vTaskArg[ 'service_args' ]
 

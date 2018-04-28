@@ -1,6 +1,11 @@
 from main_task import app
 from flask import json, Response
+from flask_restful import Api
+from service_config_db import *
 
+main_task_api = Api(app, default_mediatype="application/json")
+main_task_api.add_resource(Getservicetype, '/servicetype')
+main_task_api.add_resource(Getserviceinfo, '/serviceinfo')
 
 def Response_headers(content):
     resp = Response(content)
