@@ -4,8 +4,10 @@ from flask_restful import Api
 from service_config_db import *
 
 main_task_api = Api(app, default_mediatype="application/json")
-main_task_api.add_resource(Getservicetype, '/servicetype')
-main_task_api.add_resource(Getserviceinfo, '/serviceinfo')
+main_task_api.add_resource(Getservicetype, '/servicetypea')
+main_task_api.add_resource(Getservicetype2, '/servicetypeb')
+main_task_api.add_resource(Getserviceinfo, '/serviceinfoc')
+main_task_api.add_resource(Updserviceinfo, '/serviceinfod')
 
 def Response_headers(content):
     resp = Response(content)

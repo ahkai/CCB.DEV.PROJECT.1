@@ -22,8 +22,10 @@ MySQL_Base = declarative_base()
 class ServiceType( MySQL_Base ):
     __tablename__ = 'service_type'
 
-    type_id      = Column( BIGINT(8), primary_key=True , autoincrement=False )
-    type_name    = Column( VARCHAR(100) )
+    # type_id      = Column( BIGINT(8), primary_key=True , autoincrement=False )
+    # type_name    = Column( VARCHAR(100) )
+    obj_id       = Column( 'type_id', BIGINT(8), primary_key=True , autoincrement=False )
+    obj_name     = Column( 'type_name', VARCHAR(100) )
     type_desc    = Column( VARCHAR(300) )
     type_level   = Column( TINYINT(1) )
     type_uplevel = Column( BIGINT(8) )
@@ -32,7 +34,7 @@ class ServiceType( MySQL_Base ):
 
     def toDict(self):
         return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
-        # return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        #return {c.name: getattr(self, c.name) for c in self.__table__.columns}
         # obj = {c.name: str(getattr(self, c.name)) for c in self.__table__.columns}
         # return json.dumps(obj)
 
@@ -49,3 +51,6 @@ class ServiceInfo( MySQL_Base ):
     service_owner   = Column( VARCHAR(50) )
     service_date    = Column( DATETIME )
     service_status  = Column( TINYINT(1) )
+
+    def toDict(self):
+        return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}

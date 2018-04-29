@@ -6,7 +6,9 @@ arrServiceRoute = {
                         '10000001': 'getleveldata',
                         '10000002': 'getlogicaldata',
                         '10000003': 'getservicetype',
-                        '10000004': 'getserviceinfo'
+                        '10000004': 'getservicetype2',
+                        '10000005': 'getserviceinfo',
+                        '10000006': 'updserviceinfo'
                   }
 
 

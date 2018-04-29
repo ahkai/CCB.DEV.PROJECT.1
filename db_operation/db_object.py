@@ -161,9 +161,9 @@ class Dbobject(object):
             for ( res ) in self.db_cursor:
                 temp_array = {}
 
-                temp_array['app_id'] = res[0]
+                temp_array['obj_id'] = res[0]
                 temp_array['app_ename'] = res[1]
-                temp_array['app_cname'] = res[2]
+                temp_array['obj_name'] = res[2]
 
                 #cname_str = res[2]
                 #cname_str.encode('utf-8')
@@ -222,7 +222,7 @@ class Dbobject(object):
                 result_array.append(temp_array)
 
             RetData['Code'] = '1'
-            RetData['LOGICAL_INFO'] = result_array
+            RetData['RowsArray'] = result_array
 
         except mysql.connector.custom_error_exception() as e:
             RetData['Code'] = '0'
