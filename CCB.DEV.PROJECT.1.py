@@ -8,7 +8,10 @@ arrServiceRoute = {
                         '10000003': 'getservicetype',
                         '10000004': 'getservicetype2',
                         '10000005': 'getserviceinfo',
-                        '10000006': 'updserviceinfo'
+                        '10000006': 'updserviceinfo',
+                        '10000007': 'delserviceinfo',
+                        '10000008': 'updservicetype',
+                        '10000009': 'delservicetype',
                   }
 
 

@@ -8,6 +8,9 @@ main_task_api.add_resource(Getservicetype, '/servicetypea')
 main_task_api.add_resource(Getservicetype2, '/servicetypeb')
 main_task_api.add_resource(Getserviceinfo, '/serviceinfoc')
 main_task_api.add_resource(Updserviceinfo, '/serviceinfod')
+main_task_api.add_resource(Delserviceinfo, '/serviceinfoe')
+main_task_api.add_resource(Updservicetype, '/serviceinfof')
+main_task_api.add_resource(Delservicetype, '/serviceinfog')
 
 def Response_headers(content):
     resp = Response(content)

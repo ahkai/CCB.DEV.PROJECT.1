@@ -1,9 +1,10 @@
 from flask import  make_response, request, json, jsonify
 from flask_restful import Resource, reqparse
 from contextlib import contextmanager
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import *
 from models import *
-from datetime import datetime
+from sqlalchemy import *
+from datetime import datetime,time
 
 #Session = sessionmaker( bind=MySQL_engine )
 #Session.configure(bind=engine)  # once engine is available
@@ -164,39 +165,197 @@ class Updserviceinfo(Resource):
 
         reg_data = reqparse.RequestParser()
         reg_data.add_argument('service_id', type=str, location='args')
-        # reg_data.add_argument('service_type', type=str, location='args')
+        reg_data.add_argument('service_type', type=str, location='args')
         reg_data.add_argument('service_name', type=str, location='args')
         reg_data.add_argument('service_desc', type=str, location='args')
         reg_data.add_argument('service_url', type=str, location='args')
         reg_data.add_argument('service_func', type=str, location='args')
-        # reg_data.add_argument('service_owner', type=str, location='args')
-        # reg_data.add_argument('service_date', type=str, location='args')
+        reg_data.add_argument('service_owner', type=str, location='args')
+        reg_data.add_argument('service_date', type=str, location='args')
         reg_data.add_argument('service_status', type=str, location='args')
         args = reg_data.parse_args()
 
         service_id = args['service_id']
+        service_type = args['service_type']
         service_name = args['service_name']
         service_desc = args['service_desc']
         service_url = args['service_url']
         service_func = args['service_func']
         service_status = args['service_status']
+        service_owner = args['service_owner']
+        service_date = args['service_date']
+
+        MySQL_engine.execution_options(isolation_level="READ COMMITTED")
+
+        if service_id == 'AUTO' :
+
+            with mysession_scope() as MySession:
+                vQuery = MySession.query( func.max(ServiceInfo.service_id).label('col1') ).all()
+
+                # vtServiceTypes = vQuery.all()
+
+            for tempitem in vQuery:
+                MaxService_id = tempitem.col1 + 1
+
+            args['service_id'] = MaxService_id
+            args['service_date'] = ''
+
+            # service_date = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+            service_date = datetime.now()
+            vInsertRow = ServiceInfo( service_id=MaxService_id,
+                                      service_type=service_type,
+                                      service_name=service_name,
+                                      service_desc=service_desc,
+                                      service_func=service_func,
+                                      service_url=service_url,
+                                      service_date=service_date,
+                                      service_status=service_status,
+                                      service_owner=service_owner
+                                      )
+
+            with mysession_scope() as MySession:
+                MySession.add(vInsertRow)
+
+            with mysession_scope() as MySession:
+                vtServiceTypes = MySession.query(ServiceInfo).filter(ServiceInfo.service_id == MaxService_id).all()
+
+                arrRows = []
+                for vtServiceType in vtServiceTypes:
+                    arrRows.append(vtServiceType.toDict())
+
+                arrRows = formatdatetime(arrRows, 'service_date')
+
+            RetObj = {}
+            RetObj['Code'] = 'redisplay'
+            RetObj['RowsArray'] = arrRows
+
+        else:
+            with mysession_scope() as MySession:
+
+                MySession.query(ServiceInfo).filter(ServiceInfo.service_id == service_id).update(args)
+
+            RetObj = {}
+            RetObj['Code'] = '1'
+            RetObj['RowsArray'] = 'success'
+
+
+        return my_make_response( RetObj )
+
+class Delserviceinfo(Resource):
+
+    def post(self):
+
+        reg_data = reqparse.RequestParser()
+        reg_data.add_argument('service_id', type=str, location='args')
+        args = reg_data.parse_args()
+
+        service_id = args['service_id']
 
         MySQL_engine.execution_options(isolation_level="READ COMMITTED")
 
         with mysession_scope() as MySession:
-            # MySession.query(ServiceInfo).filter(ServiceInfo.service_id==service_id).update(
-            #     {ServiceInfo.service_name : service_name },
-            #     {ServiceInfo.service_desc : service_desc },
-            #     {ServiceInfo.service_url : service_url },
-            #     {ServiceInfo.service_func : service_func },
-            #     {ServiceInfo.service_status : service_status }
-            #                                                                                )
-
-            MySession.query(ServiceInfo).filter(ServiceInfo.service_id==service_id).update(args)
-
+            MySession.query( ServiceInfo ).filter(ServiceInfo.service_id==service_id).delete()
 
         RetObj = {}
         RetObj['Code'] = '1'
-        RetObj['RowsArray'] = 'success'
+        RetObj['RowsArray'] = 'AAAAA'
+
+        return my_make_response( RetObj )
+
+class Updservicetype(Resource):
+
+    def post(self):
+
+        reg_data = reqparse.RequestParser()
+        reg_data.add_argument('obj_id', type=str, location='args')
+        reg_data.add_argument('obj_name', type=str, location='args')
+        reg_data.add_argument('type_desc', type=str, location='args')
+        reg_data.add_argument('type_level', type=str, location='args')
+        reg_data.add_argument('type_uplevel', type=str, location='args')
+        reg_data.add_argument('type_date', type=str, location='args')
+        reg_data.add_argument('type_status', type=str, location='args')
+
+        args = reg_data.parse_args()
+
+        obj_id = args['obj_id']
+        obj_name = args['obj_name']
+        type_desc = args['type_desc']
+        type_level = args['type_level']
+        type_uplevel = args['type_uplevel']
+        type_date = args['type_date']
+        type_status = args['type_status']
+
+        MySQL_engine.execution_options(isolation_level="READ COMMITTED")
+
+        if obj_id == 'AUTO' :
+
+            with mysession_scope() as MySession:
+                vQuery = MySession.query( func.max(ServiceType.obj_id).label('col1') ).all()
+
+                # vtServiceTypes = vQuery.all()
+
+            for tempitem in vQuery:
+                MaxService_id = tempitem.col1 + 1
+
+            # args['obj_id'] = MaxService_id
+            # args['type_date'] = ''
+
+            # service_date = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+            type_date = datetime.now()
+            vInsertRow = ServiceType( obj_id=MaxService_id,
+                                      obj_name=obj_name,
+                                      type_desc=type_desc,
+                                      type_level=type_level,
+                                      type_uplevel=type_uplevel,
+                                      type_date=type_date,
+                                      type_status=type_status
+                                      )
+
+            with mysession_scope() as MySession:
+                MySession.add(vInsertRow)
+
+            with mysession_scope() as MySession:
+                vtServiceTypes = MySession.query(ServiceType).filter(ServiceType.obj_id == MaxService_id).all()
+
+                arrRows = []
+                for vtServiceType in vtServiceTypes:
+                    arrRows.append(vtServiceType.toDict())
+
+                arrRows = formatdatetime(arrRows, 'type_date')
+
+            RetObj = {}
+            RetObj['Code'] = 'redisplay'
+            RetObj['RowsArray'] = arrRows
+
+        else:
+            with mysession_scope() as MySession:
+
+                MySession.query(ServiceType).filter(ServiceType.obj_id == obj_id).update(args)
+
+            RetObj = {}
+            RetObj['Code'] = '1'
+            RetObj['RowsArray'] = 'success'
+
+
+        return my_make_response( RetObj )
+
+class Delservicetype(Resource):
+
+    def post(self):
+
+        reg_data = reqparse.RequestParser()
+        reg_data.add_argument('obj_id', type=str, location='args')
+        args = reg_data.parse_args()
+
+        obj_id = args['obj_id']
+
+        MySQL_engine.execution_options(isolation_level="READ COMMITTED")
+
+        with mysession_scope() as MySession:
+            MySession.query( ServiceType ).filter(ServiceType.obj_id == obj_id).delete()
+
+        RetObj = {}
+        RetObj['Code'] = '1'
+        RetObj['RowsArray'] = 'BBBBB'
 
         return my_make_response( RetObj )
