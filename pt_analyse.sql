@@ -6,7 +6,7 @@ use pt_analyse;
 -- ----------------------------
 CREATE TABLE  service_type  (
    type_id        BIGINT(8)        NOT NULL PRIMARY KEY,
-   type_name      varchar(100)     default 'none'   NOT NULL,
+   type_name      varchar(100)     default 'none'   NOT NULL UNIQUE,
    type_desc      varchar(300)     default 'none'   NOT NULL,
    type_level     TINYINT(1)       default 1        NOT NULL,
    type_uplevel   BIGINT(8)        default 10000000 NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE  service_type  (
 CREATE TABLE  service_info  (
    service_id     BIGINT(8)        NOT NULL PRIMARY KEY,
    service_type	  BIGINT(8) 			 NOT NULL,
-   service_name   varchar(100)     default 'none'  NOT NULL,
+   service_name   varchar(100)     default 'none'  NOT NULL UNIQUE ,
    service_desc   varchar(300)     default 'none'  NOT NULL,
    service_url    varchar(100)     default 'none'  NOT NULL,
    service_func   varchar(100)     default 'none'  NOT NULL,

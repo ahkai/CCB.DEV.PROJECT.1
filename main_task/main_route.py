@@ -11,6 +11,7 @@ main_task_api.add_resource(Updserviceinfo, '/serviceinfod')
 main_task_api.add_resource(Delserviceinfo, '/serviceinfoe')
 main_task_api.add_resource(Updservicetype, '/serviceinfof')
 main_task_api.add_resource(Delservicetype, '/serviceinfog')
+main_task_api.add_resource(Getservicetype22, '/serviceinfoh')
 
 def Response_headers(content):
     resp = Response(content)

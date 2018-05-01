@@ -9,21 +9,33 @@ from datetime import datetime,time
 #Session = sessionmaker( bind=MySQL_engine )
 #Session.configure(bind=engine)  # once engine is available
 
+errMessage = ''
+errFlag = 0
+
+def return_error( vMsg):
+    global errMessage
+    global errFlag
+    errMessage = str(vMsg)
+    errFlag = 1
+
 @contextmanager
 def mysession_scope():
     """Provide a transactional scope around a series of operations."""
 
     #MySQL_engine.execution_options(isolation_level="READ COMMITTED")
-    SessionObject = sessionmaker(bind=MySQL_engine)
+    SessionObject = sessionmaker(bind=MySQL_engine, autoflush=false,autocommit=false)
 
     MySession = SessionObject()
 
     try:
+        MySession.begin()
         yield MySession
         MySession.commit()
-    except:
+    except Exception, e:
+
         MySession.rollback()
-        raise
+        return_error(e)
+
     finally:
         MySession.close()
 
@@ -80,6 +92,8 @@ class Getservicetype(Resource):
 
         MySQL_engine.execution_options(isolation_level="READ COMMITTED")
 
+        global errMessage, errFlag
+
         with mysession_scope() as MySession:
             vQuery = MySession.query( ServiceType ).filter(ServiceType.type_level==1).order_by( ServiceType.obj_id )
 
@@ -89,14 +103,21 @@ class Getservicetype(Resource):
             for vtServiceType in vtServiceTypes:
                 arrRows.append( vtServiceType.toDict() )
 
-        arrRows = formatdatetime( arrRows, 'type_date')
-        #print jsonify( arrRows )
-        #print arrRows
-        #print json.dumps(arrRows, cls=new_alchemy_encoder(), check_circular=False)
+            arrRows = formatdatetime( arrRows, 'type_date')
 
-        RetObj = {}
-        RetObj['Code'] = '1'
-        RetObj['LEVEL_1'] = arrRows
+            RetObj = {}
+            RetObj['Code'] = '1'
+            RetObj['LEVEL_1'] = arrRows
+
+        if errFlag :
+            RetObj = {}
+            RetObj['Code'] = '0'
+            RetObj['Message'] = errMessage
+
+            print "MySession Exception:[" + errMessage + "]"
+
+        errFlag = 0
+        errMessage = ''
 
         return my_make_response( RetObj )
 
@@ -113,6 +134,8 @@ class Getservicetype2(Resource):
 
         MySQL_engine.execution_options(isolation_level="READ COMMITTED")
 
+        global errMessage, errFlag
+
         with mysession_scope() as MySession:
             vQuery = MySession.query( ServiceType ).filter(ServiceType.type_level==2).filter(ServiceType.type_uplevel==type_id).order_by( ServiceType.obj_id )
 
@@ -122,11 +145,62 @@ class Getservicetype2(Resource):
             for vtServiceType in vtServiceTypes:
                 arrRows.append( vtServiceType.toDict() )
 
-        arrRows = formatdatetime( arrRows, 'type_date')
+            arrRows = formatdatetime( arrRows, 'type_date')
 
-        RetObj = {}
-        RetObj['Code'] = '1'
-        RetObj['LEVEL_2'] = arrRows
+            RetObj = {}
+            RetObj['Code'] = '1'
+            RetObj['LEVEL_2'] = arrRows
+
+        if errFlag :
+            RetObj = {}
+            RetObj['Code'] = '0'
+            RetObj['Message'] = errMessage
+
+            print "MySession Exception:[" + errMessage + "]"
+
+        errFlag = 0
+        errMessage = ''
+
+        return my_make_response( RetObj )
+
+class Getservicetype22(Resource):
+
+    def post(self):
+
+        reg_data = reqparse.RequestParser()
+        reg_data.add_argument('obj_id', type=str, location='args')
+        args = reg_data.parse_args()
+
+        obj_id = args['obj_id']
+
+        MySQL_engine.execution_options(isolation_level="READ COMMITTED")
+
+        global errMessage, errFlag
+
+        with mysession_scope() as MySession:
+            vQuery = MySession.query( ServiceType ).filter(ServiceType.type_level==2).filter(ServiceType.type_uplevel==obj_id).order_by( ServiceType.obj_id )
+
+            vtServiceTypes = vQuery.all()
+
+            arrRows = []
+            for vtServiceType in vtServiceTypes:
+                arrRows.append( vtServiceType.toDict() )
+
+            arrRows = formatdatetime( arrRows, 'type_date')
+
+            RetObj = {}
+            RetObj['Code'] = '1'
+            RetObj['RowsArray'] = arrRows
+
+        if errFlag :
+            RetObj = {}
+            RetObj['Code'] = '0'
+            RetObj['Message'] = errMessage
+
+            print "MySession Exception:[" + errMessage + "]"
+
+        errFlag = 0
+        errMessage = ''
 
         return my_make_response( RetObj )
 
@@ -187,15 +261,19 @@ class Updserviceinfo(Resource):
 
         MySQL_engine.execution_options(isolation_level="READ COMMITTED")
 
+        global errMessage, errFlag
+
         if service_id == 'AUTO' :
 
             with mysession_scope() as MySession:
                 vQuery = MySession.query( func.max(ServiceInfo.service_id).label('col1') ).all()
 
                 # vtServiceTypes = vQuery.all()
-
-            for tempitem in vQuery:
-                MaxService_id = tempitem.col1 + 1
+            if vQuery[0].col1 :
+                for tempitem in vQuery:
+                    MaxService_id = tempitem.col1 + 1
+            else:
+                MaxService_id = 10000001
 
             args['service_id'] = MaxService_id
             args['service_date'] = ''
@@ -216,6 +294,13 @@ class Updserviceinfo(Resource):
             with mysession_scope() as MySession:
                 MySession.add(vInsertRow)
 
+            if errFlag :
+                RetObj = {}
+                RetObj['Code'] = '0'
+                RetObj['Message'] = errMessage
+
+                print "MySession Exception:[" + errMessage + "]"
+
             with mysession_scope() as MySession:
                 vtServiceTypes = MySession.query(ServiceInfo).filter(ServiceInfo.service_id == MaxService_id).all()
 
@@ -225,19 +310,21 @@ class Updserviceinfo(Resource):
 
                 arrRows = formatdatetime(arrRows, 'service_date')
 
-            RetObj = {}
-            RetObj['Code'] = 'redisplay'
-            RetObj['RowsArray'] = arrRows
+                RetObj = {}
+                RetObj['Code'] = 'redisplay'
+                RetObj['RowsArray'] = arrRows
 
         else:
             with mysession_scope() as MySession:
 
                 MySession.query(ServiceInfo).filter(ServiceInfo.service_id == service_id).update(args)
 
-            RetObj = {}
-            RetObj['Code'] = '1'
-            RetObj['RowsArray'] = 'success'
+                RetObj = {}
+                RetObj['Code'] = '1'
+                RetObj['RowsArray'] = 'success'
 
+        errFlag = 0
+        errMessage = ''
 
         return my_make_response( RetObj )
 
@@ -253,12 +340,24 @@ class Delserviceinfo(Resource):
 
         MySQL_engine.execution_options(isolation_level="READ COMMITTED")
 
+        global errMessage, errFlag
+
         with mysession_scope() as MySession:
             MySession.query( ServiceInfo ).filter(ServiceInfo.service_id==service_id).delete()
 
-        RetObj = {}
-        RetObj['Code'] = '1'
-        RetObj['RowsArray'] = 'AAAAA'
+            RetObj = {}
+            RetObj['Code'] = '1'
+            RetObj['RowsArray'] = 'AAAAA'
+
+        if errFlag:
+            RetObj = {}
+            RetObj['Code'] = '0'
+            RetObj['Message'] = errMessage
+
+            print "MySession Exception:[" + errMessage + "]"
+
+        errFlag = 0
+        errMessage = ''
 
         return my_make_response( RetObj )
 
@@ -287,6 +386,8 @@ class Updservicetype(Resource):
 
         MySQL_engine.execution_options(isolation_level="READ COMMITTED")
 
+        global errMessage, errFlag
+
         if obj_id == 'AUTO' :
 
             with mysession_scope() as MySession:
@@ -294,8 +395,11 @@ class Updservicetype(Resource):
 
                 # vtServiceTypes = vQuery.all()
 
-            for tempitem in vQuery:
-                MaxService_id = tempitem.col1 + 1
+            if vQuery[0].col1 :
+                for tempitem in vQuery:
+                    MaxService_id = tempitem.col1 + 1
+            else:
+                MaxService_id = 10000001
 
             # args['obj_id'] = MaxService_id
             # args['type_date'] = ''
@@ -310,32 +414,49 @@ class Updservicetype(Resource):
                                       type_date=type_date,
                                       type_status=type_status
                                       )
-
             with mysession_scope() as MySession:
                 MySession.add(vInsertRow)
 
-            with mysession_scope() as MySession:
-                vtServiceTypes = MySession.query(ServiceType).filter(ServiceType.obj_id == MaxService_id).all()
+            if errFlag :
+                RetObj = {}
+                RetObj['Code'] = '0'
+                RetObj['Message'] = errMessage
 
-                arrRows = []
-                for vtServiceType in vtServiceTypes:
-                    arrRows.append(vtServiceType.toDict())
+                print "MySession Exception:[" + errMessage + "]"
 
-                arrRows = formatdatetime(arrRows, 'type_date')
+            else:
+                with mysession_scope() as MySession:
+                    vtServiceTypes = MySession.query(ServiceType).filter(ServiceType.obj_id == MaxService_id).all()
 
-            RetObj = {}
-            RetObj['Code'] = 'redisplay'
-            RetObj['RowsArray'] = arrRows
+                    arrRows = []
+                    for vtServiceType in vtServiceTypes:
+                        arrRows.append(vtServiceType.toDict())
+
+                    arrRows = formatdatetime(arrRows, 'type_date')
+
+                RetObj = {}
+                RetObj['Code'] = 'redisplay'
+                RetObj['RowsArray'] = arrRows
 
         else:
             with mysession_scope() as MySession:
 
                 MySession.query(ServiceType).filter(ServiceType.obj_id == obj_id).update(args)
 
-            RetObj = {}
-            RetObj['Code'] = '1'
-            RetObj['RowsArray'] = 'success'
+                RetObj = {}
+                RetObj['Code'] = '1'
+                RetObj['RowsArray'] = 'success'
 
+            if errFlag :
+                RetObj = {}
+                RetObj['Code'] = '0'
+                RetObj['Message'] = errMessage
+
+                print "MySession Exception:[" + errMessage + "]"
+
+
+        errFlag = 0
+        errMessage = ''
 
         return my_make_response( RetObj )
 
@@ -351,11 +472,36 @@ class Delservicetype(Resource):
 
         MySQL_engine.execution_options(isolation_level="READ COMMITTED")
 
-        with mysession_scope() as MySession:
-            MySession.query( ServiceType ).filter(ServiceType.obj_id == obj_id).delete()
+        global errMessage, errFlag
 
         RetObj = {}
-        RetObj['Code'] = '1'
-        RetObj['RowsArray'] = 'BBBBB'
+
+        if obj_id != 'AUTO':
+            with mysession_scope() as MySession:
+                vQuery = MySession.query(ServiceType).filter( (ServiceType.type_level == 2) & (ServiceType.type_uplevel == obj_id) ).order_by(ServiceType.obj_id).all()
+
+                if vQuery :
+                     RetObj = {}
+                     RetObj['Code'] = '0'
+                     RetObj['Message'] = 'It has secondary level catelog , please delete first!'
+                else:
+                    with mysession_scope() as MySession:
+                        MySession.query( ServiceType ).filter(ServiceType.obj_id == obj_id).delete()
+
+                        RetObj = {}
+                        RetObj['Code'] = '1'
+                        RetObj['RowsArray'] = 'BBBBB'
+
+        if errFlag :
+            RetObj = {}
+            RetObj['Code'] = '0'
+            RetObj['Message'] = errMessage
+
+        print "MySession Exception:[" + errMessage + "]"
+
+        errFlag = 0
+        errMessage = ''
 
         return my_make_response( RetObj )
+
+

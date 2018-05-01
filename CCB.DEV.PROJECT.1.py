@@ -1,6 +1,10 @@
 from main_task import app
 from flask import url_for,request, redirect, abort
+import sys
 
+reload(sys)
+sys.setdefaultencoding('utf-8')
+print sys.getdefaultencoding()
 
 arrServiceRoute = {
                         '10000001': 'getleveldata',
@@ -12,6 +16,7 @@ arrServiceRoute = {
                         '10000007': 'delserviceinfo',
                         '10000008': 'updservicetype',
                         '10000009': 'delservicetype',
+                        '10000010': 'getservicetype22'
                   }
 
 
@@ -23,44 +28,26 @@ def task_main():
     if request.values.get('service_id'):
 
         vTempstr = request.values.get('service_id')
-        vTaskArg['service_id'] = vTempstr.encode('ascii')
-        #vTaskArg['service_id'] = request.values.get('service_id').decode('ascii')
+
+        vTaskArg['service_id'] = vTempstr
+        #vTaskArg['service_id'] = vTempstr.encode('ascii')
 
         if request.values.get('service_args'):
             vTempstr = request.values.get('service_args')
-            vTaskArg['service_args'] = vTempstr.encode('ascii')
-            #vTaskArg['service_args'] = request.values.get('service_args')
+
+            vTaskArg['service_args'] = vTempstr
         else:
             vTaskArg['service_args'] = 'none'
     else:
         abort(404)
-#    else:
-#        abort(404)
 
+    # message_info = 'main_task.task_main() get request.arg = [ %s ], ' % vTaskArg
+    # app.logger.info(message_info)
 
-    # vValueStr = request.get_json().get('service_id','')
-
-    # if request.args.items():
-    #     if request.args.get('service_id'):
-    #         vTaskArg['service_id'] = request.args.get('service_id')
-    #
-    #         if request.args.get('service_args'):
-    #             vTaskArg['service_args'] = request.args.get('service_args')
-    #         else:
-    #             vTaskArg['service_args'] = 'none'
-    #     else:
-    #         abort(404)
-    # else:
-    #     abort(404)
-
-    message_info = 'main_task.task_main() get request.arg = [ %s ], ' % vTaskArg
-
-    app.logger.info(message_info)
-
-    # vTaskurl = url_for( 'getservicetype', vTaskArg_decode, _method=request.method)
     vTaskurl = url_for( arrServiceRoute[ vTaskArg[ 'service_id' ] ],  _method=request.method)
     vTaskurl = vTaskurl + '?'+ vTaskArg[ 'service_args' ]
 
+    print 'Taskurl:['+vTaskurl+']'
 
     with  app.test_client() as client:
         if request.method == 'GET':
@@ -70,10 +57,7 @@ def task_main():
                 cli_response = client.post(vTaskurl, follow_redirects=True)
             else:
                 abort(404)
-                # raise exception page_not_found(404)
 
-    #vRetData = '%s%s' % ( 'HAHAHHAHAHAH : ', cli_response.data )
-    #vRetData = cli_response.data
     vRetData = cli_response
 
     return vRetData
