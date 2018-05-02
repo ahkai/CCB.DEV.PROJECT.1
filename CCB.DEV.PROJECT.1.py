@@ -1,12 +1,10 @@
-from main_task import app
+from main_task import app, MainAPIRouteArray
 from flask import url_for,request, redirect, abort
 import sys
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
 print sys.getdefaultencoding()
-
-MainAPIRouteArray = {}
 
 # MainAPIRouteArray = {
 #                         '10000001': 'getleveldata',
@@ -64,20 +62,5 @@ def task_main():
     return vRetData
 
 
-
-
-if __name__ == '__main__':
+if __name__ == '__main__' and len(MainAPIRouteArray) :
     app.run(host='0.0.0.0')
-
-cli_response = {}
-cli_response = app.test_client().post("/serviceinfoAAAA", follow_redirects=True)
-
-if cli_response['Code'] == '0':
-    print cli_response['Message']
-else:
-    TempRouteArray = cli_response['RowsArray']
-
-    for TempObj in TempRouteArray:
-        MainAPIRouteArray[TempObj.service_id] = TempObj.service_func
-
-

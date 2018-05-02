@@ -276,11 +276,11 @@ class Updserviceinfo(Resource):
         if service_id == 'AUTO' :
 
             with mysession_scope() as MySession:
-                vQuery = MySession.query( func.max(ServiceInfo.service_id).label('col1') ).all()
+                vQuerys = MySession.query( func.max(ServiceInfo.service_id).label('col1') ).all()
 
                 # vtServiceTypes = vQuery.all()
-                if vQuery[0].col1 :
-                    for tempitem in vQuery:
+                if len(vQuerys) != 0:
+                    for tempitem in vQuerys:
                         MaxService_id = tempitem.col1 + 1
                 else:
                     MaxService_id = 10000001
@@ -415,12 +415,12 @@ class Updservicetype(Resource):
         if obj_id == 'AUTO' :
 
             with mysession_scope() as MySession:
-                vQuery = MySession.query( func.max(ServiceType.obj_id).label('col1') ).all()
+                vQuerys = MySession.query( func.max(ServiceType.obj_id).label('col1') ).all()
 
                 # vtServiceTypes = vQuery.all()
 
-                if vQuery[0].col1 :
-                    for tempitem in vQuery:
+                if len(vQuerys) != 0:
+                    for tempitem in vQuerys:
                         MaxService_id = tempitem.col1 + 1
                 else:
                     MaxService_id = 10000001
@@ -502,9 +502,9 @@ class Delservicetype(Resource):
 
         if obj_id != 'AUTO':
             with mysession_scope() as MySession:
-                vQuery = MySession.query(ServiceType).filter( (ServiceType.type_level == 2) & (ServiceType.type_uplevel == obj_id) ).order_by(ServiceType.obj_id).all()
+                vQuerys = MySession.query(ServiceType).filter( (ServiceType.type_level == 2) & (ServiceType.type_uplevel == obj_id) ).order_by(ServiceType.obj_id).all()
 
-                if vQuery :
+                if len(vQuerys) == 0:
                      RetObj = {}
                      RetObj['Code'] = '0'
                      RetObj['Message'] = 'It has secondary level catelog , please delete first!'
@@ -521,7 +521,7 @@ class Delservicetype(Resource):
             RetObj['Code'] = '0'
             RetObj['Message'] = errMessage
 
-        print "MySession Exception:[" + errMessage + "]"
+            print "MySession Exception:[" + errMessage + "]"
 
         errFlag = 0
         errMessage = ''
@@ -535,36 +535,74 @@ class Getmaintaskroute(Resource):
         MySQL_engine.execution_options(isolation_level="READ COMMITTED")
 
         global errMessage, errFlag
-        main_obj_id = 10000001  # 10000001 API Module default type_id
+        main_obj_id = 10000002  # 10000002 API Module default service_type
         RetObj = {}
 
-        if obj_id != 'AUTO':
-            with mysession_scope() as MySession:
-                vQuerys = MySession.query(ServiceType).filter(
-                    (ServiceType.type_level == 2) & (ServiceType.type_uplevel == main_obj_id) & (
-                                ServiceType.type_status == 1)).order_by(ServiceType.obj_id).all()
+        with mysession_scope() as MySession:
+            vQuerys = MySession.query(ServiceInfo).filter((ServiceInfo.service_type == main_obj_id) &
+                                                          (ServiceInfo.service_status == 1)).order_by(ServiceInfo.service_id).all()
 
-                if vQuerys == '':
-                    RetObj = {}
-                    RetObj['Code'] = '0'
-                    RetObj['Message'] = 'do not find any API service , registed!'
-                else:
-                    arrRows = []
-                    for vQuery in vQuerys:
-                        arrRows.append(vQuery.toDict())
+            if len(vQuerys) == 0:
+                RetObj = {}
+                RetObj['Code'] = '0'
+                RetObj['Message'] = 'do not find any API service , registed!'
+            else:
+                arrRows = []
+                for vQuery in vQuerys:
+                    arrRows.append(vQuery.toDict())
 
-                    arrRows = formatdatetime(arrRows, 'type_date')
+                arrRows = formatdatetime(arrRows, 'type_date')
 
-                    RetObj = {}
-                    RetObj['Code'] = 'redisplay'
-                    RetObj['RowsArray'] = arrRows
+                RetObj = {}
+                RetObj['Code'] = 'redisplay'
+                RetObj['RowsArray'] = arrRows
 
         if errFlag:
             RetObj = {}
             RetObj['Code'] = '0'
             RetObj['Message'] = errMessage
 
-        print "MySession Exception:[" + errMessage + "]"
+            print "MySession Exception:[" + errMessage + "]"
+
+        errFlag = 0
+        errMessage = ''
+
+        return RetObj
+
+def GetmaintaskrouteALL():
+
+        MySQL_engine.execution_options(isolation_level="READ COMMITTED")
+
+        global errMessage, errFlag
+        #main_obj_id = '10000002'  # 10000001 API Module default type_id
+        RetObj = {}
+
+        with mysession_scope() as MySession:
+            # vQuerys = MySession.query(ServiceInfo).filter((ServiceInfo.service_type == main_obj_id) &
+            #                                               (ServiceInfo.service_status == 1)).order_by(ServiceInfo.service_id).all()
+            vQuerys = MySession.query(ServiceInfo).filter((ServiceInfo.service_status == 1)).order_by(ServiceInfo.service_id).all()
+
+            if len(vQuerys) == 0 :
+                RetObj = {}
+                RetObj['Code'] = '0'
+                RetObj['Message'] = 'do not find any API service , registed!'
+            else:
+                arrRows = []
+                for vQuery in vQuerys:
+                    arrRows.append(vQuery.toDict())
+
+                arrRows = formatdatetime(arrRows, 'service_date')
+
+                RetObj = {}
+                RetObj['Code'] = 'redisplay'
+                RetObj['RowsArray'] = arrRows
+
+        if errFlag:
+            RetObj = {}
+            RetObj['Code'] = '0'
+            RetObj['Message'] = errMessage
+
+            print "MySession Exception:[" + errMessage + "]"
 
         errFlag = 0
         errMessage = ''
