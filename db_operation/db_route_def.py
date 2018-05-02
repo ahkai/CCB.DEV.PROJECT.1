@@ -12,6 +12,8 @@ class Connectdb(Resource):
 
         vMyHtml = '%s%s%s' % ('Connect Str:', my_db.connectstr, '</br>')
 
+        operation_id = 'connect'
+
         if operation_id == 'connect':
             vMyHtml = '%s%s' % (vMyHtml, 'Go into db connecton! </br>')
             vMsg = my_db.my_db_connect()

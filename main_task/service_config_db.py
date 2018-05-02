@@ -12,6 +12,8 @@ from datetime import datetime,time
 errMessage = ''
 errFlag = 0
 
+testglobal = 0
+
 def return_error( vMsg):
     global errMessage
     global errFlag
@@ -27,6 +29,10 @@ def mysession_scope():
 
     MySession = SessionObject()
 
+    global errMessage, errFlag
+    errMessage = ''
+    errFlag = 0
+
     try:
         MySession.begin()
         yield MySession
@@ -35,6 +41,9 @@ def mysession_scope():
 
         MySession.rollback()
         return_error(e)
+
+        # errMessage = str(e)
+        # errFlag = 1
 
     finally:
         MySession.close()
@@ -237,6 +246,11 @@ class Getserviceinfo(Resource):
             RetObj['Message'] = errMessage
 
             print "MySession Exception:[" + errMessage + "]"
+
+        # global testglobal
+        # testglobal = testglobal + 1
+        #
+        # print testglobal
 
         return my_make_response( RetObj )
 

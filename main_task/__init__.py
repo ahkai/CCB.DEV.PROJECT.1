@@ -5,7 +5,7 @@ app = Flask(__name__)
 app.secret_key = 'yankai'
 
 
-from db_operation.db_route import *
+from db_operation.db_route import db_operation_api
 from main_task.main_route import  *
 
 # cli_response = app.test_client().post("/serviceinfoAAAA", follow_redirects=True)
@@ -21,7 +21,6 @@ else:
 
     for TempObj in TempRouteArray:
         MainAPIRouteArray[ str(TempObj['service_id']) ] = TempObj['service_func'].encode('ascii')
-
 
 
 
