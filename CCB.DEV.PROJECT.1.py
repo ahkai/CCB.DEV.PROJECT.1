@@ -75,7 +75,7 @@ cli_response = app.test_client().post("/serviceinfoAAAA", follow_redirects=True)
 if cli_response['Code'] == '0':
     print cli_response['Message']
 else:
-    TempRouteArray = cli_response['RowsArray']
+    TempRouteArray = cli_response['RowsArray'] 
 
     for TempObj in TempRouteArray:
         MainAPIRouteArray[TempObj.service_id] = TempObj.service_func
