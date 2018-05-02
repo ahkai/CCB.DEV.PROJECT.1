@@ -225,11 +225,18 @@ class Getserviceinfo(Resource):
             for vtServiceType in vtServiceTypes:
                 arrRows.append( vtServiceType.toDict() )
 
-        arrRows = formatdatetime( arrRows, 'service_date')
+            arrRows = formatdatetime( arrRows, 'service_date')
 
-        RetObj = {}
-        RetObj['Code'] = '1'
-        RetObj['RowsArray'] = arrRows
+            RetObj = {}
+            RetObj['Code'] = '1'
+            RetObj['RowsArray'] = arrRows
+
+        if errFlag:
+            RetObj = {}
+            RetObj['Code'] = '0'
+            RetObj['Message'] = errMessage
+
+            print "MySession Exception:[" + errMessage + "]"
 
         return my_make_response( RetObj )
 
@@ -249,6 +256,7 @@ class Updserviceinfo(Resource):
         reg_data.add_argument('service_status', type=str, location='args')
         args = reg_data.parse_args()
 
+        args['service_func'] = args['service_func'].lower()
         service_id = args['service_id']
         service_type = args['service_type']
         service_name = args['service_name']
@@ -258,6 +266,8 @@ class Updserviceinfo(Resource):
         service_status = args['service_status']
         service_owner = args['service_owner']
         service_date = args['service_date']
+
+
 
         MySQL_engine.execution_options(isolation_level="READ COMMITTED")
 
@@ -269,51 +279,58 @@ class Updserviceinfo(Resource):
                 vQuery = MySession.query( func.max(ServiceInfo.service_id).label('col1') ).all()
 
                 # vtServiceTypes = vQuery.all()
-            if vQuery[0].col1 :
-                for tempitem in vQuery:
-                    MaxService_id = tempitem.col1 + 1
-            else:
-                MaxService_id = 10000001
+                if vQuery[0].col1 :
+                    for tempitem in vQuery:
+                        MaxService_id = tempitem.col1 + 1
+                else:
+                    MaxService_id = 10000001
 
-            args['service_id'] = MaxService_id
-            args['service_date'] = ''
-
-            # service_date = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
-            service_date = datetime.now()
-            vInsertRow = ServiceInfo( service_id=MaxService_id,
-                                      service_type=service_type,
-                                      service_name=service_name,
-                                      service_desc=service_desc,
-                                      service_func=service_func,
-                                      service_url=service_url,
-                                      service_date=service_date,
-                                      service_status=service_status,
-                                      service_owner=service_owner
-                                      )
-
-            with mysession_scope() as MySession:
-                MySession.add(vInsertRow)
-
-            if errFlag :
+            if errFlag:
                 RetObj = {}
                 RetObj['Code'] = '0'
                 RetObj['Message'] = errMessage
 
                 print "MySession Exception:[" + errMessage + "]"
+            else:
+                args['service_id'] = MaxService_id
+                args['service_date'] = ''
 
-            with mysession_scope() as MySession:
-                vtServiceTypes = MySession.query(ServiceInfo).filter(ServiceInfo.service_id == MaxService_id).all()
+                # service_date = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+                service_date = datetime.now()
+                vInsertRow = ServiceInfo(service_id=MaxService_id,
+                                         service_type=service_type,
+                                         service_name=service_name,
+                                         service_desc=service_desc,
+                                         service_func=service_func,
+                                         service_url=service_url,
+                                         service_date=service_date,
+                                         service_status=service_status,
+                                         service_owner=service_owner
+                                         )
 
-                arrRows = []
-                for vtServiceType in vtServiceTypes:
-                    arrRows.append(vtServiceType.toDict())
+                with mysession_scope() as MySession:
+                    MySession.add(vInsertRow)
 
-                arrRows = formatdatetime(arrRows, 'service_date')
+                if errFlag :
+                    RetObj = {}
+                    RetObj['Code'] = '0'
+                    RetObj['Message'] = errMessage
 
-                RetObj = {}
-                RetObj['Code'] = 'redisplay'
-                RetObj['RowsArray'] = arrRows
+                    print "MySession Exception:[" + errMessage + "]"
+                else:
+                    with mysession_scope() as MySession:
+                        vtServiceTypes = MySession.query(ServiceInfo).filter(
+                            ServiceInfo.service_id == MaxService_id).all()
 
+                        arrRows = []
+                        for vtServiceType in vtServiceTypes:
+                            arrRows.append(vtServiceType.toDict())
+
+                        arrRows = formatdatetime(arrRows, 'service_date')
+
+                        RetObj = {}
+                        RetObj['Code'] = 'redisplay'
+                        RetObj['RowsArray'] = arrRows
         else:
             with mysession_scope() as MySession:
 
@@ -322,6 +339,13 @@ class Updserviceinfo(Resource):
                 RetObj = {}
                 RetObj['Code'] = '1'
                 RetObj['RowsArray'] = 'success'
+
+            if errFlag:
+                RetObj = {}
+                RetObj['Code'] = '0'
+                RetObj['Message'] = errMessage
+
+                print "MySession Exception:[" + errMessage + "]"
 
         errFlag = 0
         errMessage = ''
@@ -395,16 +419,16 @@ class Updservicetype(Resource):
 
                 # vtServiceTypes = vQuery.all()
 
-            if vQuery[0].col1 :
-                for tempitem in vQuery:
-                    MaxService_id = tempitem.col1 + 1
-            else:
-                MaxService_id = 10000001
+                if vQuery[0].col1 :
+                    for tempitem in vQuery:
+                        MaxService_id = tempitem.col1 + 1
+                else:
+                    MaxService_id = 10000001
 
             # args['obj_id'] = MaxService_id
             # args['type_date'] = ''
-
             # service_date = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+
             type_date = datetime.now()
             vInsertRow = ServiceType( obj_id=MaxService_id,
                                       obj_name=obj_name,
@@ -434,9 +458,9 @@ class Updservicetype(Resource):
 
                     arrRows = formatdatetime(arrRows, 'type_date')
 
-                RetObj = {}
-                RetObj['Code'] = 'redisplay'
-                RetObj['RowsArray'] = arrRows
+                    RetObj = {}
+                    RetObj['Code'] = 'redisplay'
+                    RetObj['RowsArray'] = arrRows
 
         else:
             with mysession_scope() as MySession:
@@ -504,4 +528,45 @@ class Delservicetype(Resource):
 
         return my_make_response( RetObj )
 
+class Getmaintaskroute(Resource):
 
+    def post(self):
+
+        MySQL_engine.execution_options(isolation_level="READ COMMITTED")
+
+        global errMessage, errFlag
+        main_obj_id = 10000001  # 10000001 API Module default type_id
+        RetObj = {}
+
+        if obj_id != 'AUTO':
+            with mysession_scope() as MySession:
+                vQuerys = MySession.query(ServiceType).filter(
+                    (ServiceType.type_level == 2) & (ServiceType.type_uplevel == main_obj_id) & (
+                                ServiceType.type_status == 1)).order_by(ServiceType.obj_id).all()
+
+                if vQuerys == '':
+                    RetObj = {}
+                    RetObj['Code'] = '0'
+                    RetObj['Message'] = 'do not find any API service , registed!'
+                else:
+                    arrRows = []
+                    for vQuery in vQuerys:
+                        arrRows.append(vQuery.toDict())
+
+                    arrRows = formatdatetime(arrRows, 'type_date')
+
+                    RetObj = {}
+                    RetObj['Code'] = 'redisplay'
+                    RetObj['RowsArray'] = arrRows
+
+        if errFlag:
+            RetObj = {}
+            RetObj['Code'] = '0'
+            RetObj['Message'] = errMessage
+
+        print "MySession Exception:[" + errMessage + "]"
+
+        errFlag = 0
+        errMessage = ''
+
+        return RetObj
