@@ -1,6 +1,12 @@
 from main_task import app, MainAPIRouteArray
+from main_task.mysnowflake import gen_id
+from main_task.task_operation_db import UpdateTaskInfoD
 from flask import url_for,request, redirect, abort
-import sys
+import sys, uuid
+
+# from threading import current_thread
+# mythread = current_thread()
+# print mythread.getName()
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -40,6 +46,23 @@ def geturl( vvTaskArg ):
 
 @app.route('/task', methods=['GET','POST'])
 def task_main():
+
+    myTaskID = 0
+    myLoopCount = 0
+
+    TaskDetail = {}
+
+    TaskDetail['task_id'] = ''
+    TaskDetail['service_id'] = ''
+    TaskDetail['task_begin'] = ''
+    TaskDetail['task_end'] = ''
+    TaskDetail['task_message'] = ''
+    TaskDetail['task_status'] = ''
+
+    # mythread = current_thread()
+    # print 'AAA:'+str(mythread.ident)
+    # print 'AAA:'+mythread.getName()
+
     vTaskArg = {}
 
 #    if request.values.getlist():
@@ -47,8 +70,8 @@ def task_main():
 
         vTempstr = request.values.get('service_id')
 
-        vTaskArg['service_id'] = vTempstr
-        #vTaskArg['service_id'] = vTempstr.encode('ascii')
+        vTaskArg['service_id'] =  vTempstr.encode('ascii')
+        #vTaskArg['service_id'] = vTempstr
 
         if request.values.get('service_args'):
             vTempstr = request.values.get('service_args')
@@ -59,8 +82,28 @@ def task_main():
     else:
         abort(404)
 
-    # message_info = 'main_task.task_main() get request.arg = [ %s ], ' % vTaskArg
-    # app.logger.info(message_info)
+
+
+    while myTaskID == 0:
+        myTaskID = gen_id()
+        myLoopCount = myLoopCount + 1
+
+        if myLoopCount == 10:
+            print 'Failed to initial the task id !'
+            abort(404)
+
+    TaskDetail['task_id'] = str(myTaskID)
+    TaskDetail['service_id'] = vTaskArg['service_id']
+
+    TaskDetail = UpdateTaskInfoD(TaskDetail)
+
+    if TaskDetail['Code'] == '0':
+        print 'Task:[' + TaskDetail['TaskArgs']['task_id'] + ']: Failed to insert the begin time!'
+        abort(404)
+    else:
+        print 'Task:[' + TaskDetail['TaskArgs']['task_id'] + ']: Begin! ' + str(TaskDetail['TaskArgs']['task_begin'])
+
+
 
     vTaskurl = url_for( MainAPIRouteArray[ vTaskArg[ 'service_id' ] ]['service_func'] )
     vTaskurl = vTaskurl + '?'+ vTaskArg[ 'service_args' ]
@@ -75,6 +118,14 @@ def task_main():
                 cli_response = client.post(vTaskurl, follow_redirects=True)
             else:
                 abort(404)
+
+    tempobj = TaskDetail['TaskArgs']
+    TaskDetail = UpdateTaskInfoD(tempobj)
+
+    if TaskDetail['Code'] == '0':
+        print 'Task:[' + TaskDetail['TaskArgs']['task_id'] + ']: Failed to update the finish time!'
+    else:
+        print 'Task:[' + TaskDetail['TaskArgs']['task_id'] + ']: Successful finished! ' + str(TaskDetail['TaskArgs']['task_end'])
 
     vRetData = cli_response
 

@@ -36,7 +36,21 @@ CREATE TABLE  service_info  (
 
 ;
 
+-- ----------------------------
+-- Table structure for service_info
+-- ----------------------------
+CREATE TABLE  task_info  (
+   task_id      varchar(100)    NOT NULL PRIMARY KEY,
+   service_id	  BIGINT(8) 			 NOT NULL,
+   task_begin   DATETIME         DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
+   task_end     DATETIME         ,
+   task_message varchar(500)    default 'none'  NOT NULL,
+   task_status   TINYINT(1)      default 0  NOT NULL,
 
+   FOREIGN KEY (service_id)REFERENCES service_info(service_id)
+)
+
+;
 
 
 -- ----------------------------
