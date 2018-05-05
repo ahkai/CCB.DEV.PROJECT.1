@@ -59,10 +59,6 @@ def formatdatetime( arrobjs, colname ):
         tempstr =  objNew[colname]
         objNew[colname] = str(tempstr)
 
-        # tempstr.replace('datetime.datetime(', '')
-        # tempstr.replace(')', '')
-        # tempstr = datetime(tempstr)
-
         arrNew.append(objNew)
 
     return arrNew
@@ -82,22 +78,6 @@ def my_make_response( RetObj ):
 class Getservicetype(Resource):
 
     def post(self):
-
-        # reg_data = reqparse.RequestParser()
-        # reg_data.add_argument('app_id', type=str, location='args')
-        # args = reg_data.parse_args()
-        #
-        # app_id = args['app_id']
-
-        # if (request.method == 'POST'):
-        #     app_id = request.form('app_id')
-
-        # MyConnect = MySQL_engine.execution_options(
-        #     isolation_level="READ COMMITTED"
-        # )
-        #
-        # connection.execution_options(stream_results=True). \
-        #     execute(stmt)
 
         MySQL_engine.execution_options(isolation_level="READ COMMITTED")
 
@@ -225,6 +205,8 @@ class Getserviceinfo(Resource):
 
         MySQL_engine.execution_options(isolation_level="READ COMMITTED")
 
+        global errMessage, errFlag
+
         with mysession_scope() as MySession:
             vQuery = MySession.query( ServiceInfo ).filter(ServiceInfo.service_type==service_type).order_by( ServiceInfo.service_id )
 
@@ -247,10 +229,8 @@ class Getserviceinfo(Resource):
 
             print "MySession Exception:[" + errMessage + "]"
 
-        # global testglobal
-        # testglobal = testglobal + 1
-        #
-        # print testglobal
+        errFlag = 0
+        errMessage = ''
 
         return my_make_response( RetObj )
 
@@ -281,7 +261,21 @@ class Updserviceinfo(Resource):
         service_owner = args['service_owner']
         service_date = args['service_date']
 
+        if service_name == '':
+            service_name = 'none'
+            args['service_name'] = 'none'
 
+        if service_desc == '':
+            service_desc = 'none'
+            args['service_desc'] = 'none'
+
+        if service_url == '':
+            service_url = 'none'
+            args['service_url'] = 'none'
+
+        if service_func == '':
+            service_func = 'none'
+            args['service_func'] = 'none'
 
         MySQL_engine.execution_options(isolation_level="READ COMMITTED")
 
@@ -308,6 +302,18 @@ class Updserviceinfo(Resource):
             else:
                 args['service_id'] = MaxService_id
                 args['service_date'] = ''
+
+                service_url = service_url.encode('ascii')
+
+                service_url = service_url.replace('//', '/')
+
+                print service_url
+
+                if service_url[0] != '/' and service_url != 'none' :
+                    service_url = '/' + service_url
+
+                if service_url[ len(service_url) - 1 ] == '/' and len(service_url) != 1 :
+                    service_url = service_url[ 0: (len(service_url) - 1 )]
 
                 # service_date = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
                 service_date = datetime.now()
@@ -346,8 +352,19 @@ class Updserviceinfo(Resource):
                         RetObj['Code'] = 'redisplay'
                         RetObj['RowsArray'] = arrRows
         else:
-            with mysession_scope() as MySession:
+            service_url = service_url.encode('ascii')
 
+            service_url = service_url.replace('//', '/')
+
+            if service_url[0] != '/' and service_url != 'none' :
+                service_url = '/' + service_url
+
+            if service_url[len(service_url) - 1] == '/' and len(service_url) != 1:
+                service_url = service_url[ 0: (len(service_url) - 1) ]
+
+            args['service_url'] = service_url
+
+            with mysession_scope() as MySession:
                 MySession.query(ServiceInfo).filter(ServiceInfo.service_id == service_id).update(args)
 
                 RetObj = {}
@@ -380,19 +397,24 @@ class Delserviceinfo(Resource):
 
         global errMessage, errFlag
 
-        with mysession_scope() as MySession:
-            MySession.query( ServiceInfo ).filter(ServiceInfo.service_id==service_id).delete()
+        if service_id != 'AUTO':
+            with mysession_scope() as MySession:
+                MySession.query(ServiceInfo).filter(ServiceInfo.service_id == service_id).delete()
 
+                RetObj = {}
+                RetObj['Code'] = '1'
+                RetObj['RowsArray'] = 'AAAAA'
+
+            if errFlag:
+                RetObj = {}
+                RetObj['Code'] = '0'
+                RetObj['Message'] = errMessage
+
+                print "MySession Exception:[" + errMessage + "]"
+        else:
             RetObj = {}
             RetObj['Code'] = '1'
-            RetObj['RowsArray'] = 'AAAAA'
-
-        if errFlag:
-            RetObj = {}
-            RetObj['Code'] = '0'
-            RetObj['Message'] = errMessage
-
-            print "MySession Exception:[" + errMessage + "]"
+            RetObj['RowsArray'] = 'BBBBB'
 
         errFlag = 0
         errMessage = ''
@@ -407,6 +429,7 @@ class Updservicetype(Resource):
         reg_data.add_argument('obj_id', type=str, location='args')
         reg_data.add_argument('obj_name', type=str, location='args')
         reg_data.add_argument('type_desc', type=str, location='args')
+        reg_data.add_argument('type_baseurl', type=str, location='args')
         reg_data.add_argument('type_level', type=str, location='args')
         reg_data.add_argument('type_uplevel', type=str, location='args')
         reg_data.add_argument('type_date', type=str, location='args')
@@ -421,6 +444,19 @@ class Updservicetype(Resource):
         type_uplevel = args['type_uplevel']
         type_date = args['type_date']
         type_status = args['type_status']
+        type_baseurl = args['type_baseurl']
+
+        if obj_name == '':
+            obj_name = 'none'
+            args['obj_name'] = 'none'
+
+        if type_desc == '':
+            type_desc = 'none'
+            args['type_desc'] = 'none'
+
+        if type_baseurl == '':
+            type_baseurl = 'none'
+            args['type_baseurl'] = 'none'
 
         MySQL_engine.execution_options(isolation_level="READ COMMITTED")
 
@@ -431,22 +467,30 @@ class Updservicetype(Resource):
             with mysession_scope() as MySession:
                 vQuerys = MySession.query( func.max(ServiceType.obj_id).label('col1') ).all()
 
-                # vtServiceTypes = vQuery.all()
-
                 if len(vQuerys) != 0:
                     for tempitem in vQuerys:
                         MaxService_id = tempitem.col1 + 1
                 else:
                     MaxService_id = 10000001
 
-            # args['obj_id'] = MaxService_id
-            # args['type_date'] = ''
-            # service_date = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+            if type_level == '1':
+                type_baseurl = str(MaxService_id)
+            else:
+                type_baseurl = type_baseurl.encode('ascii')
+
+                type_baseurl = type_baseurl.replace('//', '/')
+
+                if type_baseurl[0] != '/' and type_baseurl != 'none' :
+                    type_baseurl = '/' + type_baseurl
+
+                if type_baseurl[ len(type_baseurl) - 1 ] == '/' and len(type_baseurl) != 1 :
+                    type_baseurl = type_baseurl[ 0: (len(type_baseurl) - 1) ]
 
             type_date = datetime.now()
             vInsertRow = ServiceType( obj_id=MaxService_id,
                                       obj_name=obj_name,
                                       type_desc=type_desc,
+                                      type_baseurl=type_baseurl,
                                       type_level=type_level,
                                       type_uplevel=type_uplevel,
                                       type_date=type_date,
@@ -477,21 +521,40 @@ class Updservicetype(Resource):
                     RetObj['RowsArray'] = arrRows
 
         else:
-            with mysession_scope() as MySession:
 
+            type_baseurl = type_baseurl.replace( '//', '/' )
+
+            if type_baseurl[0] != '/' and type_baseurl != 'none' :
+                type_baseurl = '/' + type_baseurl
+
+            if type_baseurl[len(type_baseurl) - 1] == '/' and len(type_baseurl) != 1 :
+                type_baseurl = type_baseurl[0: (len(type_baseurl) - 1)]
+
+            args['type_baseurl'] = type_baseurl
+
+            with mysession_scope() as MySession:
                 MySession.query(ServiceType).filter(ServiceType.obj_id == obj_id).update(args)
 
-                RetObj = {}
-                RetObj['Code'] = '1'
-                RetObj['RowsArray'] = 'success'
-
-            if errFlag :
+            if errFlag:
                 RetObj = {}
                 RetObj['Code'] = '0'
                 RetObj['Message'] = errMessage
 
                 print "MySession Exception:[" + errMessage + "]"
 
+            else:
+                with mysession_scope() as MySession:
+                    vtServiceTypes = MySession.query(ServiceType).filter(ServiceType.obj_id == obj_id).all()
+
+                    arrRows = []
+                    for vtServiceType in vtServiceTypes:
+                        arrRows.append(vtServiceType.toDict())
+
+                    arrRows = formatdatetime(arrRows, 'type_date')
+
+                    RetObj = {}
+                    RetObj['Code'] = 'redisplay'
+                    RetObj['RowsArray'] = arrRows
 
         errFlag = 0
         errMessage = ''
@@ -518,7 +581,7 @@ class Delservicetype(Resource):
             with mysession_scope() as MySession:
                 vQuerys = MySession.query(ServiceType).filter( (ServiceType.type_level == 2) & (ServiceType.type_uplevel == obj_id) ).order_by(ServiceType.obj_id).all()
 
-                if len(vQuerys) == 0:
+                if len(vQuerys) != 0:
                      RetObj = {}
                      RetObj['Code'] = '0'
                      RetObj['Message'] = 'It has secondary level catelog , please delete first!'
@@ -529,6 +592,10 @@ class Delservicetype(Resource):
                         RetObj = {}
                         RetObj['Code'] = '1'
                         RetObj['RowsArray'] = 'BBBBB'
+        else:
+            RetObj = {}
+            RetObj['Code'] = '1'
+            RetObj['RowsArray'] = 'BBBBB'
 
         if errFlag :
             RetObj = {}
@@ -549,12 +616,20 @@ class Getmaintaskroute(Resource):
         MySQL_engine.execution_options(isolation_level="READ COMMITTED")
 
         global errMessage, errFlag
-        main_obj_id = 10000002  # 10000002 API Module default service_type
+        #main_obj_id = 10000002  # 10000002 API Module default service_type
         RetObj = {}
 
         with mysession_scope() as MySession:
-            vQuerys = MySession.query(ServiceInfo).filter((ServiceInfo.service_type == main_obj_id) &
-                                                          (ServiceInfo.service_status == 1)).order_by(ServiceInfo.service_id).all()
+            vQuerys = MySession.query(  ServiceInfo.service_id,
+                                        ServiceInfo.service_status,
+                                        ServiceInfo.service_url,
+                                        ServiceInfo.service_func,
+                                        ServiceInfo.service_owner,
+                                        ServiceInfo.service_date,
+                                        ServiceType.type_baseurl)\
+                                .filter(    (ServiceInfo.service_status > 0) &
+                                            (ServiceInfo.service_type == ServiceType.obj_id) )\
+                                .order_by(  ServiceInfo.service_id).all()
 
             if len(vQuerys) == 0:
                 RetObj = {}
@@ -594,7 +669,7 @@ def GetmaintaskrouteALL():
         with mysession_scope() as MySession:
             # vQuerys = MySession.query(ServiceInfo).filter((ServiceInfo.service_type == main_obj_id) &
             #                                               (ServiceInfo.service_status == 1)).order_by(ServiceInfo.service_id).all()
-            vQuerys = MySession.query(ServiceInfo).filter((ServiceInfo.service_status == 1)).order_by(ServiceInfo.service_id).all()
+            vQuerys = MySession.query(ServiceInfo).filter((ServiceInfo.service_status == 2)).order_by(ServiceInfo.service_id).all()
 
             if len(vQuerys) == 0 :
                 RetObj = {}

@@ -27,6 +27,7 @@ class ServiceType( MySQL_Base ):
     obj_id       = Column( 'type_id', BIGINT(8), primary_key=True , autoincrement=False )
     obj_name     = Column( 'type_name', VARCHAR(100) )
     type_desc    = Column( VARCHAR(300) )
+    type_baseurl = Column( VARCHAR(300) )
     type_level   = Column( TINYINT(1) )
     type_uplevel = Column( BIGINT(8) )
     type_date    = Column( DATETIME )

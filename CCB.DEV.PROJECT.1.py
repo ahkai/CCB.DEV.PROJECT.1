@@ -19,6 +19,25 @@ print sys.getdefaultencoding()
 #                         '10000010': 'getservicetype22'
 #                   }
 
+def geturl( vvTaskArg ):
+    tempobj = MainAPIRouteArray[ vvTaskArg['service_id'] ]
+
+    tempfunc = tempobj['service_func']
+    tempurl = tempobj['service_url']
+    tempbaseurl = tempobj['type_baseurl']
+
+    if tempfunc != 'none':
+        return url_for(tempfunc)
+    else:
+        if tempurl == 'none':
+            return tempbaseurl
+        else:
+            if len(tempbaseurl) == 1:
+                return tempurl
+            else:
+                return tempbaseurl + tempurl
+
+
 @app.route('/task', methods=['GET','POST'])
 def task_main():
     vTaskArg = {}
@@ -43,7 +62,7 @@ def task_main():
     # message_info = 'main_task.task_main() get request.arg = [ %s ], ' % vTaskArg
     # app.logger.info(message_info)
 
-    vTaskurl = url_for( MainAPIRouteArray[ vTaskArg[ 'service_id' ] ],  _method=request.method)
+    vTaskurl = url_for( MainAPIRouteArray[ vTaskArg[ 'service_id' ] ]['service_func'] )
     vTaskurl = vTaskurl + '?'+ vTaskArg[ 'service_args' ]
 
     print 'Taskurl:['+vTaskurl+']'

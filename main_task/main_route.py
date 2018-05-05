@@ -6,15 +6,15 @@ from service_config_db import Getservicetype,Getservicetype2,Getserviceinfo,\
     Getmaintaskroute,GetmaintaskrouteALL
 
 main_task_api = Api(app, default_mediatype="application/json")
-main_task_api.add_resource(Getservicetype, '/servicetypea')
-main_task_api.add_resource(Getservicetype2, '/servicetypeb')
-main_task_api.add_resource(Getserviceinfo, '/serviceinfoc')
-main_task_api.add_resource(Updserviceinfo, '/serviceinfod')
-main_task_api.add_resource(Delserviceinfo, '/serviceinfoe')
-main_task_api.add_resource(Updservicetype, '/serviceinfof')
-main_task_api.add_resource(Delservicetype, '/serviceinfog')
-main_task_api.add_resource(Getservicetype22, '/serviceinfoh')
-main_task_api.add_resource(Getmaintaskroute, '/serviceinfoAAAA')
+main_task_api.add_resource(Getservicetype, '/gatewayconf/servicetypea')
+main_task_api.add_resource(Getservicetype2, '/gatewayconf/servicetypeb')
+main_task_api.add_resource(Getserviceinfo, '/gatewayconf/serviceinfoc')
+main_task_api.add_resource(Updserviceinfo, '/gatewayconf/serviceinfod')
+main_task_api.add_resource(Delserviceinfo, '/gatewayconf/serviceinfoe')
+main_task_api.add_resource(Updservicetype, '/gatewayconf/serviceinfof')
+main_task_api.add_resource(Delservicetype, '/gatewayconf/serviceinfog')
+main_task_api.add_resource(Getservicetype22, '/gatewayconf/serviceinfoh')
+main_task_api.add_resource(Getmaintaskroute, '/gatewayconf/serviceinfoAAAA')
 
 def Response_headers(content):
     resp = Response(content)

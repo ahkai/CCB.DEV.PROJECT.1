@@ -20,7 +20,11 @@ else:
     TempRouteArray = cli_response['RowsArray']
 
     for TempObj in TempRouteArray:
-        MainAPIRouteArray[ str(TempObj['service_id']) ] = TempObj['service_func'].encode('ascii')
+        TempObj['service_func'] =  TempObj['service_func'].encode('ascii')
+        TempObj['service_url'] = TempObj['service_url'].encode('ascii')
+
+    for TempObj in TempRouteArray:
+        MainAPIRouteArray[ str(TempObj['service_id']) ] = TempObj
 
 
 
