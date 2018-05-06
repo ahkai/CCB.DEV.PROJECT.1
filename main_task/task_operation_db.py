@@ -88,9 +88,9 @@ class GetTaskMinData(Resource):
 
         vsqlstatement1 = "select now();"
 
-        vsqlstatement2 = "select date_sub(now(), interval 1 hour)"
+        vsqlstatement2 = "select date_sub(now(), interval 10 minute)"
 
-        vsqlstatement3 ="select c.type_id as ServiceType, " \
+        vsqlstatement3 ="select c.type_name as ServiceType, " \
                                 "DATE_FORMAT( concat(date(a.task_begin), ' ', hour(a.task_begin), ':', floor(minute(a.task_begin) / 30) * 30), '%Y-%m-%d %H:%i') as TaskStartTime, " \
                                 "count(*) as TotalNum "\
                         "from task_info as a, service_info as b, service_type as c "\
@@ -151,6 +151,8 @@ class GetTaskMinData(Resource):
                             vStartName = newobj['ServiceType']
                             vTTimeLineObj.append(vTimeLineObj)
                             vTimeLineObj = {}
+                            arrRows = []
+                            vDataLine = []
 
             RetObj['Code'] = '1'
             RetObj['TaskArgs'] = vTTimeLineObj

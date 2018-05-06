@@ -109,7 +109,7 @@ def GetTimeLine(vDT):
 
     # newTL.append(str(vDT))
 
-    for index in range( 60 ):
+    for index in range( 10 ):
         newDT = newDT + datetime.timedelta(minutes=1)
         tempstr = str(newDT.strftime("%Y-%m-%d %H:%M"))
         newTL.append(tempstr)
