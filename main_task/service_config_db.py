@@ -517,20 +517,31 @@ def GetmaintaskrouteALL():
 
         RetObj = {}
 
-        with mysession_scope(RetObj) as MySession:
+        with mysession_scope2(RetObj) as MySession:
             # vQuerys = MySession.query(ServiceInfo).filter((ServiceInfo.service_type == main_obj_id) &
             #                                               (ServiceInfo.service_status == 1)).order_by(ServiceInfo.service_id).all()
-            vQuerys = MySession.query(ServiceInfo).filter((ServiceInfo.service_status == 2)).order_by(ServiceInfo.service_id).all()
+            #vQuerys = MySession.query(ServiceInfo).filter((ServiceInfo.service_status == 2)).order_by(ServiceInfo.service_id).all()
+            vQuerys = MySession.query(  ServiceInfo.service_id,
+                                        ServiceInfo.service_status,
+                                        ServiceInfo.service_url,
+                                        ServiceInfo.service_func,
+                                        ServiceInfo.service_owner,
+                                        ServiceInfo.service_date,
+                                        ServiceType.type_baseurl)\
+                                .filter(    (ServiceInfo.service_status > 0) &
+                                            (ServiceInfo.service_type == ServiceType.obj_id) )\
+                                .order_by(  ServiceInfo.service_id).all()
 
             if len(vQuerys) == 0 :
                 RetObj['Code'] = '0'
                 RetObj['Message'] = 'do not find any API service , registed!'
             else:
                 arrRows = []
-                for vQuery in vQuerys:
-                    arrRows.append(vQuery.toDict())
+
+                arrRows = row2dict(vQuerys)
 
                 arrRows = formatdatetime(arrRows, 'service_date')
+
 
                 RetObj['Code'] = 'redisplay'
                 RetObj['RowsArray'] = arrRows

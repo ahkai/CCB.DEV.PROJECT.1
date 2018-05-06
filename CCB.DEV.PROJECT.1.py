@@ -105,7 +105,8 @@ def task_main():
 
 
 
-    vTaskurl = url_for( MainAPIRouteArray[ vTaskArg[ 'service_id' ] ]['service_func'] )
+    # vTaskurl = url_for( MainAPIRouteArray[ vTaskArg[ 'service_id' ] ]['service_func'] )
+    vTaskurl = geturl(TaskDetail['TaskArgs'])
     vTaskurl = vTaskurl + '?'+ vTaskArg[ 'service_args' ]
 
     print 'Taskurl:['+vTaskurl+']'

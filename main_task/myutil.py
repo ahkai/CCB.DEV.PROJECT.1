@@ -1,7 +1,8 @@
 from flask import  make_response, json
 from contextlib import contextmanager
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import false
+from sqlalchemy import false, inspect
+import datetime
 
 from main_task.models import MySQL_engine
 
@@ -61,6 +62,18 @@ def mysession_scope2( RetObj ):
     finally:
         MySession.close()
 
+def row2dict(vQuerys):
+
+    arrRows = []
+    for vQuery in vQuerys:
+        newobj = {}
+        for index in range(len(vQuery)):
+            newobj[vQuery._fields[index]] = vQuery[index]
+
+        arrRows.append(newobj)
+
+    return arrRows
+
 
 def formatdatetime( arrobjs, colname ):
 
@@ -87,3 +100,18 @@ def my_make_response( RetObj ):
         'Access-Control-Allow-Headers'] = 'Referer,Accept,Origin,User-Agent,x-requested-with,content-type'
 
     return myresponse
+
+def GetTimeLine(vDT):
+
+    newTL = []
+    newDT = vDT
+    newDT.strftime("%Y-%m-%d %H:%M:%S")
+
+    # newTL.append(str(vDT))
+
+    for index in range( 60 ):
+        newDT = newDT + datetime.timedelta(minutes=1)
+        tempstr = str(newDT.strftime("%Y-%m-%d %H:%M"))
+        newTL.append(tempstr)
+
+    return newTL
