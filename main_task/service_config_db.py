@@ -3,8 +3,7 @@ from sqlalchemy import func
 from datetime import datetime
 
 from models import *
-from myutil import *
-
+from myutil import mysession_scope,my_make_response,GetTimeLine,mysession_scope2,row2dict,formatdatetime
 
 class Getservicetype(Resource):
 
@@ -182,7 +181,7 @@ class Updserviceinfo(Resource):
 
         if service_id == 'AUTO' :
 
-            with mysession_scope( RetObj ) as MySession:
+            with mysession_scope2( RetObj ) as MySession:
                 vQuerys = MySession.query( func.max(ServiceInfo.service_id).label('col1') ).all()
 
                 # vtServiceTypes = vQuery.all()
@@ -192,9 +191,6 @@ class Updserviceinfo(Resource):
                 else:
                     MaxService_id = 10000001
 
-            if RetObj['Code'] == '0':
-                print "MySession Exception:[" + RetObj['Message'] + "]"
-            else:
                 args['service_id'] = MaxService_id
                 args['service_date'] = ''
 
@@ -211,6 +207,7 @@ class Updserviceinfo(Resource):
                     service_url = service_url[ 0: (len(service_url) - 1 )]
 
                 service_date = datetime.now()
+
                 vInsertRow = ServiceInfo(service_id=MaxService_id,
                                          service_type=service_type,
                                          service_name=service_name,
@@ -222,27 +219,23 @@ class Updserviceinfo(Resource):
                                          service_owner=service_owner
                                          )
 
-                with mysession_scope( RetObj ) as MySession:
-                    MySession.add(vInsertRow)
+                MySession.add(vInsertRow)
 
-                if RetObj['Code'] == '0':
-                    print "MySession Exception:[" + RetObj['Message'] + "]"
-                else:
-                    with mysession_scope( RetObj ) as MySession:
-                        vtServiceTypes = MySession.query(ServiceInfo).filter(
-                            ServiceInfo.service_id == MaxService_id).all()
+                vtServiceTypes = MySession.query(ServiceInfo).filter(
+                    ServiceInfo.service_id == MaxService_id).all()
 
-                        arrRows = []
-                        for vtServiceType in vtServiceTypes:
-                            arrRows.append(vtServiceType.toDict())
+                arrRows = []
+                for vtServiceType in vtServiceTypes:
+                    arrRows.append(vtServiceType.toDict())
 
-                        arrRows = formatdatetime(arrRows, 'service_date')
+                arrRows = formatdatetime(arrRows, 'service_date')
 
-                        RetObj['Code'] = 'redisplay'
-                        RetObj['RowsArray'] = arrRows
+                RetObj['Code'] = 'redisplay'
+                RetObj['RowsArray'] = arrRows
 
-                    if RetObj['Code'] == '0':
-                        print "MySession Exception:[" + RetObj['Message'] + "]"
+
+            if RetObj['Code'] == '0':
+                print "MySession Exception:[" + RetObj['Message'] + "]"
         else:
             service_url = service_url.encode('ascii')
 
@@ -339,7 +332,7 @@ class Updservicetype(Resource):
 
         if obj_id == 'AUTO' :
 
-            with mysession_scope( RetObj ) as MySession:
+            with mysession_scope2( RetObj ) as MySession:
                 vQuerys = MySession.query( func.max(ServiceType.obj_id).label('col1') ).all()
 
                 if len(vQuerys) != 0:
@@ -348,9 +341,6 @@ class Updservicetype(Resource):
                 else:
                     MaxService_id = 10000001
 
-            if RetObj['Code'] == '0':
-                print "MySession Exception:[" + RetObj['Message'] + "]"
-            else:
                 if type_level == '1':
                     type_baseurl = str(MaxService_id)
                 else:
@@ -374,26 +364,22 @@ class Updservicetype(Resource):
                                          type_date=type_date,
                                          type_status=type_status
                                          )
-                with mysession_scope( RetObj ) as MySession:
-                    MySession.add(vInsertRow)
+                MySession.add(vInsertRow)
 
-                if RetObj['Code'] == '0':
-                    print "MySession Exception:[" + RetObj['Message'] + "]"
-                else:
-                    with mysession_scope() as MySession:
-                        vtServiceTypes = MySession.query(ServiceType).filter(ServiceType.obj_id == MaxService_id).all()
+                vtServiceTypes = MySession.query(ServiceType).filter(ServiceType.obj_id == MaxService_id).all()
 
-                        arrRows = []
-                        for vtServiceType in vtServiceTypes:
-                            arrRows.append(vtServiceType.toDict())
+                arrRows = []
+                for vtServiceType in vtServiceTypes:
+                    arrRows.append(vtServiceType.toDict())
 
-                        arrRows = formatdatetime(arrRows, 'type_date')
+                arrRows = formatdatetime(arrRows, 'type_date')
 
-                        RetObj['Code'] = 'redisplay'
-                        RetObj['RowsArray'] = arrRows
+                RetObj['Code'] = 'redisplay'
+                RetObj['RowsArray'] = arrRows
 
-                    if RetObj['Code'] == '0':
-                        print "MySession Exception:[" + RetObj['Message'] + "]"
+
+            if RetObj['Code'] == '0':
+                print "MySession Exception:[" + RetObj['Message'] + "]"
 
         else:
 
@@ -407,26 +393,23 @@ class Updservicetype(Resource):
 
             args['type_baseurl'] = type_baseurl
 
-            with mysession_scope(RetObj) as MySession:
+            with mysession_scope2(RetObj) as MySession:
                 MySession.query(ServiceType).filter(ServiceType.obj_id == obj_id).update(args)
+
+                vtServiceTypes = MySession.query(ServiceType).filter(ServiceType.obj_id == obj_id).all()
+
+                arrRows = []
+                for vtServiceType in vtServiceTypes:
+                    arrRows.append(vtServiceType.toDict())
+
+                arrRows = formatdatetime(arrRows, 'type_date')
+
+                RetObj['Code'] = 'redisplay'
+                RetObj['RowsArray'] = arrRows
+
 
             if RetObj['Code'] == '0':
                 print "MySession Exception:[" + RetObj['Message'] + "]"
-            else:
-                with mysession_scope(RetObj) as MySession:
-                    vtServiceTypes = MySession.query(ServiceType).filter(ServiceType.obj_id == obj_id).all()
-
-                    arrRows = []
-                    for vtServiceType in vtServiceTypes:
-                        arrRows.append(vtServiceType.toDict())
-
-                    arrRows = formatdatetime(arrRows, 'type_date')
-
-                    RetObj['Code'] = 'redisplay'
-                    RetObj['RowsArray'] = arrRows
-
-                if RetObj['Code'] == '0':
-                    print "MySession Exception:[" + RetObj['Message'] + "]"
 
 
         return my_make_response( RetObj )

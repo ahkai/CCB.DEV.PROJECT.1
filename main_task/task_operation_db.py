@@ -88,19 +88,22 @@ class GetTaskMinData(Resource):
 
         vsqlstatement1 = "select now();"
 
-        vsqlstatement2 = "select date_sub(now(), interval 10 minute)"
+        vsqlstatement2 = " select date_sub(now(), interval 60 minute) "
 
         vsqlstatement3 ="select c.type_name as ServiceType, " \
-                                "DATE_FORMAT( concat(date(a.task_begin), ' ', hour(a.task_begin), ':', floor(minute(a.task_begin) / 30) * 30), '%Y-%m-%d %H:%i') as TaskStartTime, " \
+                                "DATE_FORMAT (a.task_begin, '%Y-%m-%d %H:%i') as TaskStartTime, " \
                                 "count(*) as TotalNum "\
                         "from task_info as a, service_info as b, service_type as c "\
                         "where a.task_begin >= :param1 and " \
                         "a.service_id = b.service_id and " \
                         "b.service_type = c.type_id " \
-                        " group by 1, 2"
+                        " group by 1, 2 "
 
         arrRows = []
         vTimeLine = []
+        vTimeLineObj = {}
+        vTTimeLineObj = []
+        vDataLine = []
 
         with mysession_scope(RetObj) as MySession:
             vresult = MySession.execute( text( vsqlstatement2 ) )
@@ -112,9 +115,6 @@ class GetTaskMinData(Resource):
                 vStartTime = vMyRow[0]
                 vStartName = ''
                 vTimeLine = GetTimeLine(vStartTime)
-                vTimeLineObj = {}
-                vTTimeLineObj = []
-                vDataLine = []
 
                 vresult = MySession.execute(text(vsqlstatement3), {"param1": vparam1})
 
@@ -164,7 +164,64 @@ class GetTaskMinData(Resource):
 
         return my_make_response( RetObj )
 
+class GetTop10Service(Resource):
 
+    def post(self):
+
+
+        MySQL_engine.execution_options(isolation_level="READ COMMITTED")
+
+        RetObj = {}
+        vresult = ''
+        vparam1 = ''
+
+        vsqlstatement1 = "select now();"
+
+        vsqlstatement2 = "select date_sub(now(), interval 60 minute)"
+
+        vsqlstatement3 =" select b.service_name as name, count(*) as value " \
+                        " from task_info as a, service_info as b " \
+                        " where a.task_begin > DATE_FORMAT( (select now()),  '%Y-%m-%d') and " \
+                                " a.service_id = b.service_id " \
+                        " group by 1 "\
+                        " order by 2 desc "
+
+
+        arrRows = []
+        vTimeLine = []
+        vTimeLineObj = {}
+        vTTimeLineObj = []
+        vDataLine = []
+        vTopNumber = 10
+
+        with mysession_scope(RetObj) as MySession:
+            vresult = MySession.execute( text( vsqlstatement3 ) )
+
+            if vTopNumber >= vresult.cursor._rowcount :
+                vTopNumber = vresult.cursor._rowcount
+
+            if vTopNumber > 0 :
+                for index in range( 0, vTopNumber)  :
+                    vMyRow = vresult.fetchone()
+                    newobj = {}
+
+                    for index2 in range(len(vMyRow)):
+                        newobj[vMyRow._parent.keys[index2].encode('ascii')] = vMyRow[index2]
+
+                        if index2 == 0 :
+                            vTimeLine.append(vMyRow[index2])
+
+                    arrRows.append(newobj)
+
+            RetObj['Code'] = '1'
+            RetObj['TaskArgs'] = arrRows
+            RetObj['TimeLine'] = vTimeLine
+
+        if RetObj['Code'] == '0' :
+            print "MySession Exception:[" + RetObj['Message'] + "]"
+
+
+        return my_make_response( RetObj )
 
 def UpdateTaskInfoD(args):
 

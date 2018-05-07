@@ -4,7 +4,7 @@ from flask_restful import Api
 from service_config_db import Getservicetype,Getservicetype2,Getserviceinfo,\
     Updserviceinfo,Delserviceinfo,Updservicetype,Delservicetype,Getservicetype22,\
     Getmaintaskroute,GetmaintaskrouteALL
-from task_operation_db import UpdateTaskInfo,GetTaskMinData
+from task_operation_db import UpdateTaskInfo,GetTaskMinData,GetTop10Service
 
 main_task_api = Api(app, default_mediatype="application/json")
 main_task_api.add_resource(Getservicetype, '/gatewayconf/servicetypea')
@@ -18,6 +18,7 @@ main_task_api.add_resource(Getservicetype22, '/gatewayconf/serviceinfoh')
 main_task_api.add_resource(Getmaintaskroute, '/gatewayconf/serviceinfoAAAA')
 main_task_api.add_resource(UpdateTaskInfo, '/gatewaymanage/taskinfoa')
 main_task_api.add_resource(GetTaskMinData, '/gatewaymanage/taskinfob')
+main_task_api.add_resource(GetTop10Service, '/gatewaymanage/taskinfoc')
 
 def Response_headers(content):
     resp = Response(content)

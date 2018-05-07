@@ -6,6 +6,7 @@ import datetime
 
 from main_task.models import MySQL_engine
 
+
 @contextmanager
 def mysession_scope( RetObj ):
     """Provide a transactional scope around a series of operations."""
@@ -109,7 +110,7 @@ def GetTimeLine(vDT):
 
     # newTL.append(str(vDT))
 
-    for index in range( 10 ):
+    for index in range( 60 ):
         newDT = newDT + datetime.timedelta(minutes=1)
         tempstr = str(newDT.strftime("%Y-%m-%d %H:%M"))
         newTL.append(tempstr)
