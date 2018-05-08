@@ -4,6 +4,7 @@ from datetime import datetime
 
 from models import *
 from myutil import mysession_scope,my_make_response,GetTimeLine
+from myutil_sys import gettotalusage
 
 class UpdateTaskInfo(Resource):
 
@@ -280,6 +281,20 @@ class GetLevel2Total(Resource):
         if RetObj['Code'] == '0' :
             print "MySession Exception:[" + RetObj['Message'] + "]"
 
+
+        return my_make_response( RetObj )
+
+class GetSYSinfo(Resource):
+
+    def post(self):
+
+
+        MySQL_engine.execution_options(isolation_level="READ COMMITTED")
+
+        RetObj = {}
+
+        RetObj['Code'] = '1'
+        RetObj['TaskArgs'] = gettotalusage()
 
         return my_make_response( RetObj )
 
