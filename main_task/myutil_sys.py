@@ -54,6 +54,38 @@ def usage_percent(use, total):
         raise Exception("ERROR - zero division error")
     return ret
 
+def get_net_data():
+    nc = '/proc/net/dev'
+    fd = open(nc, "r")
+    netcardstatus = False
+    Totalrecv1 = 0
+    Totalsend1 = 0
+
+    for line in fd.readlines():
+        if line.find("ens") > 0:
+            field = line.split()
+            recv = field[1]
+            Totalrecv1 = Totalrecv1 + long(recv)
+            Totalsend1 = Totalsend1 + long(field[9])
+
+    fd.close()
+
+    time.sleep(1)
+    Totalrecv2 = 0
+    Totalsend2 = 0
+
+    fd = open(nc, "r")
+    for line in fd.readlines():
+        if line.find("ens") > 0:
+            field = line.split()
+            recv = field[1]
+            Totalrecv2 = Totalrecv2 + long(recv)
+            Totalsend2 = Totalsend2 + long(field[9])
+
+    fd.close()
+
+    return ( float( (Totalrecv2 - Totalrecv1) ), float( (Totalsend2 - Totalsend1) ) )
+
 def gettotalusage():
 
     disk_tip = ''
@@ -72,6 +104,11 @@ def gettotalusage():
     mem_usage = int(mem_usage[0])
     mem_tip =str(mem_usage)
 
+    (new_recv, new_send) = get_net_data()
+    # networkout = new_send/1024/1024
+    # networkin = new_recv / 1024 / 1024
+    networkout = new_send
+    networkin = new_recv
 
     cpu_usage = int(get_cpu()*100)
     cpu_tip = str(cpu_usage)
@@ -80,6 +117,9 @@ def gettotalusage():
     obj['disk'] = disk_tip
     obj['mem'] = mem_tip
     obj['cpu'] = cpu_tip
+    obj['networkout'] = networkout
+    obj['networkin'] = networkin
+
 
     return obj
 

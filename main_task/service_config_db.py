@@ -404,7 +404,7 @@ class Updservicetype(Resource):
 
                 arrRows = formatdatetime(arrRows, 'type_date')
 
-                RetObj['Code'] = 'redisplay'
+                RetObj['Code'] = '1'
                 RetObj['RowsArray'] = arrRows
 
 
