@@ -5,6 +5,8 @@ from datetime import datetime
 from models import *
 from myutil import mysession_scope,my_make_response,GetTimeLine,mysession_scope2,row2dict,formatdatetime
 
+MainAPIRouteArray = {}
+
 class Getservicetype(Resource):
 
     def post(self):
@@ -472,7 +474,7 @@ class Getmaintaskroute(Resource):
                                         ServiceInfo.service_owner,
                                         ServiceInfo.service_date,
                                         ServiceType.type_baseurl)\
-                                .filter(    (ServiceInfo.service_status > 0) &
+                                .filter(    (ServiceInfo.service_status == 2) &
                                             (ServiceInfo.service_type == ServiceType.obj_id) )\
                                 .order_by(  ServiceInfo.service_id).all()
 
@@ -511,7 +513,7 @@ def GetmaintaskrouteALL():
                                         ServiceInfo.service_owner,
                                         ServiceInfo.service_date,
                                         ServiceType.type_baseurl)\
-                                .filter(    (ServiceInfo.service_status > 0) &
+                                .filter(    (ServiceInfo.service_status == 2) &
                                             (ServiceInfo.service_type == ServiceType.obj_id) )\
                                 .order_by(  ServiceInfo.service_id).all()
 
@@ -533,3 +535,19 @@ def GetmaintaskrouteALL():
             print "MySession Exception:[" + RetObj['Message'] + "]"
 
         return RetObj
+
+def makeroutearray():
+    cli_response = GetmaintaskrouteALL()
+
+    if cli_response['Code'] == '0':
+        print cli_response['Message']
+    else:
+        TempRouteArray = cli_response['RowsArray']
+
+        for TempObj in TempRouteArray:
+            TempObj['service_func'] = TempObj['service_func'].encode('ascii')
+            TempObj['service_url'] = TempObj['service_url'].encode('ascii')
+            TempObj['type_baseurl'] = TempObj['type_baseurl'].encode('ascii')
+
+        for TempObj in TempRouteArray:
+            MainAPIRouteArray[str(TempObj['service_id'])] = TempObj
