@@ -1,8 +1,11 @@
 from main_task import app
 from main_task.mysnowflake import gen_id
 from main_task.task_operation_db import UpdateTaskInfoD
+from main_task.service_config_db import makeroutearray ,MainAPIRouteArray
+
 from flask import url_for,request, redirect, abort
 import sys, uuid
+
 
 from main_task.myutil_route import MainAPIRouteArray
 
@@ -28,22 +31,31 @@ print sys.getdefaultencoding()
 #                   }
 
 def geturl( vvTaskArg ):
-    tempobj = MainAPIRouteArray[ vvTaskArg['service_id'] ]
 
-    tempfunc = tempobj['service_func']
-    tempurl = tempobj['service_url']
-    tempbaseurl = tempobj['type_baseurl']
+    if MainAPIRouteArray.has_key( vvTaskArg['service_id'] ) is False:
+        makeroutearray()
 
-    if tempfunc != 'none':
-        return url_for(tempfunc)
-    else:
-        if tempurl == 'none':
-            return tempbaseurl
+    if MainAPIRouteArray.has_key( vvTaskArg['service_id'] ):
+
+        tempobj = MainAPIRouteArray[vvTaskArg['service_id']]
+
+        tempfunc = tempobj['service_func']
+        tempurl = tempobj['service_url']
+        tempbaseurl = tempobj['type_baseurl']
+
+        if tempfunc != 'none':
+            return url_for(tempfunc)
         else:
-            if len(tempbaseurl) == 1:
-                return tempurl
+            if tempurl == 'none':
+                return tempbaseurl
             else:
-                return tempbaseurl + tempurl
+                if len(tempbaseurl) == 1:
+                    return tempurl
+                else:
+                    return tempbaseurl + tempurl
+    else:
+        return ''
+
 
 
 @app.route('/task', methods=['GET','POST'])
@@ -105,13 +117,19 @@ def task_main():
     else:
         print 'Task:[' + TaskDetail['TaskArgs']['task_id'] + ']: Begin! ' + str(TaskDetail['TaskArgs']['task_begin'])
 
+# Get the url address
 
-
-    # vTaskurl = url_for( MainAPIRouteArray[ vTaskArg[ 'service_id' ] ]['service_func'] )
     vTaskurl = geturl(TaskDetail['TaskArgs'])
+
+    if vTaskurl == '':
+        print 'No url was found! return error'
+        abort(404)
+
     vTaskurl = vTaskurl + '?'+ vTaskArg[ 'service_args' ]
 
     print 'Taskurl:['+vTaskurl+']'
+
+# send this web request to service address
 
     with  app.test_client() as client:
         if request.method == 'GET':
