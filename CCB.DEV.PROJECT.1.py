@@ -1,8 +1,10 @@
-from main_task import app, MainAPIRouteArray
+from main_task import app
 from main_task.mysnowflake import gen_id
 from main_task.task_operation_db import UpdateTaskInfoD
 from flask import url_for,request, redirect, abort
 import sys, uuid
+
+from main_task.myutil_route import MainAPIRouteArray
 
 # from threading import current_thread
 # mythread = current_thread()

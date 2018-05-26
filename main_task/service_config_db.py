@@ -511,7 +511,7 @@ def GetmaintaskrouteALL():
                                         ServiceInfo.service_owner,
                                         ServiceInfo.service_date,
                                         ServiceType.type_baseurl)\
-                                .filter(    (ServiceInfo.service_status > 0) &
+                                .filter(    (ServiceInfo.service_status == 2) &
                                             (ServiceInfo.service_type == ServiceType.obj_id) )\
                                 .order_by(  ServiceInfo.service_id).all()
 
@@ -533,3 +533,7 @@ def GetmaintaskrouteALL():
             print "MySession Exception:[" + RetObj['Message'] + "]"
 
         return RetObj
+
+
+
+

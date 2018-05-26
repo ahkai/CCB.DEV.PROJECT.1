@@ -3,7 +3,7 @@ from flask import json, Response
 from flask_restful import Api
 from service_config_db import Getservicetype,Getservicetype2,Getserviceinfo,\
     Updserviceinfo,Delserviceinfo,Updservicetype,Delservicetype,Getservicetype22,\
-    Getmaintaskroute,GetmaintaskrouteALL
+    Getmaintaskroute
 from task_operation_db import UpdateTaskInfo,GetTaskMinData,GetTop10Service,GetLevel2Total,GetSYSinfo
 
 main_task_api = Api(app, default_mediatype="application/json")
