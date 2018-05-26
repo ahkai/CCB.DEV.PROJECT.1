@@ -1,13 +1,12 @@
 from main_task import app
 from main_task.mysnowflake import gen_id
 from main_task.task_operation_db import UpdateTaskInfoD
-from main_task.service_config_db import makeroutearray ,MainAPIRouteArray
 
 from flask import url_for,request, redirect, abort
 import sys, uuid
 
 
-from main_task.myutil_route import MainAPIRouteArray
+from main_task.myutil_route import MainAPIRouteArray, initmainroute
 
 # from threading import current_thread
 # mythread = current_thread()
@@ -33,7 +32,7 @@ print sys.getdefaultencoding()
 def geturl( vvTaskArg ):
 
     if MainAPIRouteArray.has_key( vvTaskArg['service_id'] ) is False:
-        makeroutearray()
+        initmainroute()
 
     if MainAPIRouteArray.has_key( vvTaskArg['service_id'] ):
 
